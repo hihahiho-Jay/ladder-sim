@@ -43,7 +43,7 @@
   .sec-h{font-size:13px;color:var(--muted);margin-bottom:10px;font-weight:600;letter-spacing:.3px;}
 
   /* ladder */
-  .ladder{display:flex;flex-direction:column-reverse;gap:7px;}
+  .ladder{display:flex;flex-direction:column;gap:7px;}
   .rung{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:13px 17px;cursor:pointer;transition:all .16s;}
   .rung:hover{border-color:var(--navy);transform:translateX(3px);}
   .rung .gname{font-size:15px;font-weight:600;}
@@ -154,7 +154,7 @@
     <!-- 메인 -->
     <div class="grid">
       <div>
-        <div class="sec-h">고객 상태가 나빠지는 순서대로 등급을 클릭하세요 (아래 → 위)</div>
+        <div class="sec-h">고객 상태가 나빠지는 순서대로 등급을 클릭하세요 (위 → 아래)</div>
         <div class="ladder" id="ladder"></div>
       </div>
 
