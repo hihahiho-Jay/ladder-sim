@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>브레인케어건강보험 · 누적 시뮬레이터</title>
+<style>
+  :root{
+    --navy:#1c2c4c; --navy2:#15233f; --gold:#bd9526; --gold-l:#f6efdd;
+    --ink:#2a3344; --muted:#8a93a3; --line:#e6e9ef; --bg:#f4f6f9;
+    --green:#3f7d3a; --green-l:#eaf3e6; --red:#b1453b; --red-l:#fbece9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);}
+  .page{max-width:1040px;margin:0 auto;background:#fff;min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.06);}
+
+  /* header */
+  header{background:var(--navy);color:#fff;padding:18px 30px;display:flex;align-items:center;justify-content:space-between;}
+  header .ttl{font-size:19px;font-weight:700;letter-spacing:-.3px;}
+  header .ttl span{color:#cdb86a;font-weight:500;font-size:14px;margin-left:8px;}
+  header .right{display:flex;align-items:center;gap:10px;}
+  .pill{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid #41507a;color:#b9c4dd;}
+  .pill.warn{background:#3a2c10;border-color:#6b521f;color:#e7c869;}
+  .logo{font-size:12px;color:#9aa6c2;}
+
+  .body{padding:26px 30px 50px;}
+
+  /* control bar */
+  .controls{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;padding:16px 18px;background:var(--bg);border:1px solid var(--line);border-radius:12px;margin-bottom:24px;}
+  .ctl-label{font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.3px;}
+  .seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff;}
+  .seg button{border:none;background:#fff;padding:8px 16px;font-size:13px;font-family:inherit;cursor:pointer;color:var(--ink);}
+  .seg button.on{background:var(--navy);color:#fff;font-weight:600;}
+  .ctl .val{font-size:20px;font-weight:700;color:var(--navy);}
+  .ctl .val small{font-size:12px;color:var(--muted);font-weight:500;}
+  .ghost-note{font-size:11px;color:var(--gold);margin-left:auto;align-self:center;}
+
+  /* main grid */
+  .grid{display:grid;grid-template-columns:1fr 290px;gap:22px;align-items:start;}
+  @media(max-width:780px){.grid{grid-template-columns:1fr;}}
+
+  .sec-h{font-size:13px;color:var(--muted);margin-bottom:10px;font-weight:600;letter-spacing:.3px;}
+
+  /* ladder */
+  .ladder{display:flex;flex-direction:column-reverse;gap:7px;}
+  .rung{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:13px 17px;cursor:pointer;transition:all .16s;}
+  .rung:hover{border-color:var(--navy);transform:translateX(3px);}
+  .rung .gname{font-size:15px;font-weight:600;}
+  .rung .gtag{font-size:11px;color:var(--muted);margin-top:3px;}
+  .rung .gamt{font-size:17px;font-weight:700;color:#aeb6c4;}
+  .rung .gright{text-align:right;}
+  .rung .gyears{font-size:12px;color:var(--muted);white-space:nowrap;}
+  .rung .gyears input{width:44px;padding:4px 5px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:13px;text-align:center;color:var(--ink);}
+  .rung.passed{background:var(--green-l);border-color:#aacb9f;}
+  .rung.passed .gamt{color:var(--green);} .rung.passed .gtag{color:var(--green);}
+  .rung.current{background:var(--gold-l);border-color:var(--gold);box-shadow:0 0 0 3px #bd95262e;}
+  .rung.current .gamt{color:#9a7a1c;} .rung.current .gtag{color:#9a7a1c;font-weight:600;}
+  .rung.skipped{background:var(--red-l);border-color:#e3b3ad;opacity:.85;}
+  .rung.skipped .gname{text-decoration:line-through;color:var(--red);}
+  .rung.skipped .gamt{color:var(--red);} .rung.skipped .gtag{color:var(--red);}
+  .x2{font-size:10px;background:var(--green);color:#fff;padding:2px 6px;border-radius:5px;margin-left:7px;vertical-align:middle;}
+
+  /* panel */
+  .panel{background:var(--navy);color:#fff;border-radius:14px;padding:20px;position:sticky;top:16px;}
+  .p-lab{font-size:11px;color:#aab4cf;letter-spacing:.5px;}
+  .p-big{font-size:40px;font-weight:800;color:#e7c869;line-height:1.05;margin:4px 0 2px;}
+  .p-big small{font-size:15px;color:#cdd5e6;font-weight:600;}
+  .p-year{font-size:13px;color:#aab4cf;margin-bottom:14px;}
+  .p-year b{color:#fff;}
+  .loss{background:#3a1a16;border:1px solid #7a3b34;border-radius:10px;padding:11px 13px;margin:12px 0;font-size:12.5px;color:#f2c4bd;display:none;}
+  .loss.show{display:block;}
+  .loss b{color:#ff9d92;font-size:15px;}
+  .btns{display:flex;flex-direction:column;gap:7px;margin-top:10px;}
+  button.act{font-family:inherit;font-size:13px;padding:10px;border-radius:9px;border:1px solid #41507a;background:#23335a;color:#dfe5f2;cursor:pointer;transition:.15s;}
+  button.act:hover{background:#2c3e69;}
+  button.act.primary{background:var(--gold);color:#241a04;border-color:var(--gold);font-weight:700;}
+  button.act.primary:hover{background:#d4ab38;}
+  button.act.reset{background:transparent;color:#aab4cf;}
+
+  /* graph */
+  .graph-box{margin-top:30px;padding:22px;border:1px solid var(--line);border-radius:14px;}
+  .graph-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+  .graph-head .gh-l .t{font-size:15px;font-weight:700;}
+  .graph-head .gh-l .s{font-size:12px;color:var(--muted);margin-top:3px;}
+  .total25{text-align:right;}
+  .total25 .lab{font-size:11px;color:var(--muted);}
+  .total25 .num{font-size:26px;font-weight:800;color:var(--gold);}
+  .chart{display:flex;align-items:flex-end;gap:14px;height:200px;border-bottom:2px solid var(--line);padding-bottom:0;}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+  .bar-val{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;}
+  .bar{width:70%;background:#dde2ea;border-radius:6px 6px 0 0;transition:height .4s,background .2s;min-height:2px;}
+  .bar-col.reached .bar{background:var(--gold);}
+  .bar-col.reached .bar-val{color:#9a7a1c;}
+  .bar-col.here .bar{background:var(--navy);}
+  .bar-col.here .bar-val{color:var(--navy);}
+  .bar-col.ghost .bar{background:#eef0f4;}
+  .bar-col.ghost .bar-val{color:#c2c8d2;}
+  .bar-col.skip .bar{background:var(--red);}
+  .bar-col.skip .bar-val{color:var(--red);font-size:11px;}
+  .bar-x{font-size:12px;color:var(--ink);margin-top:8px;text-align:center;}
+  .scenario{margin-top:16px;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 15px;line-height:1.8;}
+  .scenario b{color:var(--navy);}
+  .scenario .seg-arrow{color:var(--gold);margin:0 6px;font-weight:700;}
+  .scenario .empty{color:var(--muted);}
+
+  /* grade settings */
+  details.cfg{margin-top:24px;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  details.cfg summary{padding:13px 18px;cursor:pointer;font-size:13px;font-weight:600;color:var(--navy);background:var(--bg);list-style:none;}
+  details.cfg summary::-webkit-details-marker{display:none;}
+  details.cfg summary::before{content:"⚙ ";}
+  .cfg-grid{padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  @media(max-width:600px){.cfg-grid{grid-template-columns:repeat(2,1fr);}}
+  .cfg-item{font-size:12px;color:var(--muted);}
+  .cfg-item input{width:100%;margin-top:5px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;text-align:right;color:var(--ink);}
+  .cfg-note{padding:0 18px 16px;font-size:11.5px;color:var(--gold);}
+
+  .foot{margin-top:26px;font-size:11.5px;color:#9aa3b2;line-height:1.7;border-top:1px solid var(--line);padding-top:16px;}
+  .foot b{color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="ttl">브레인케어건강보험 <span>· 누적 시뮬레이터</span></div>
+    <div class="right">
+      <span class="pill warn">가상 숫자 · 골격 버전</span>
+      <span class="logo">라이나생명</span>
+    </div>
+  </header>
+
+  <div class="body">
+
+    <!-- 컨트롤 바 -->
+    <div class="controls">
+      <div class="ctl">
+        <div class="ctl-label">가입금액</div>
+        <div class="seg" id="segAmt">
+          <button data-amt="100" class="on">100만</button>
+          <button data-amt="200">200만</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <div class="ctl-label">월 납입료 (가상)</div>
+        <div class="val" id="premium">22,030<small> 원</small></div>
+      </div>
+      <div class="ctl">
+        <div class="ctl-label">총 수령 기간 (각 등급 체류 합산)</div>
+        <div class="val"><span id="totalYears">0</span><small> 년</small></div>
+      </div>
+      <div class="ghost-note">※ 모든 숫자는 예시 — 본사 자료 나오면 ⚙에서 교체</div>
+    </div>
+
+    <!-- 메인 -->
+    <div class="grid">
+      <div>
+        <div class="sec-h">고객 상태가 나빠지는 순서대로 등급을 클릭하세요 (아래 → 위)</div>
+        <div class="ladder" id="ladder"></div>
+      </div>
+
+      <div class="panel">
+        <div class="p-lab">매달 통장에 꽂히는 돈</div>
+        <div class="p-big" id="total">0<small> 만원/월</small></div>
+        <div class="p-year">1년이면 <b id="year">0</b> 만원</div>
+        <div class="loss" id="loss"></div>
+        <div class="btns">
+          <button class="act primary" onclick="demoLadder()">▶ 차근차근 진행</button>
+          <button class="act" onclick="demoJump()">⚡ 점프 (인지→3등급)</button>
+          <button class="act reset" onclick="resetSim()">↺ 초기화</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 그래프 -->
+    <div class="graph-box">
+      <div class="graph-head">
+        <div class="gh-l">
+          <div class="t">매달 받는 돈 — 내가 밟은 경로</div>
+          <div class="s">골드=지나옴 · 네이비=현재 · 회색=갈 수 있는 길 · 빨강=건너뜀(미지급)</div>
+        </div>
+        <div class="total25">
+          <div class="lab">이 시나리오 · 총 <span id="yrLabel">0</span>년 누적</div>
+          <div class="num" id="cum">0 만원</div>
+        </div>
+      </div>
+      <div class="chart" id="chart"></div>
+      <div class="scenario" id="scenario"></div>
+    </div>
+
+    <!-- 등급별 금액 설정 -->
+    <details class="cfg">
+      <summary>등급별 기본 월지급액 설정 (가상 — 여기서 수정)</summary>
+      <div class="cfg-grid" id="cfgGrid"></div>
+      <div class="cfg-note">※ 가입금액 100만 기준 예시값입니다. 본사 확정 표가 나오면 이 칸만 바꾸면 전체가 다시 계산됩니다.</div>
+    </details>
+
+    <div class="foot">
+      <b>핵심 규칙</b> ① 등급 받으면 매달 자동 지급 (신청·증빙 불요) &nbsp;②&nbsp; 떠나온 등급 = 2배로 누적 잠김 &nbsp;③&nbsp; 건너뛴(점프) 등급 = 미지급, 영영 사라짐.<br>
+      <b>주의</b> 이 도구의 모든 금액은 개념 설명용 가상값입니다. 실제 보장·납입료·가입조건은 본사 확정 자료를 따릅니다.
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── 데이터 모델 (전부 가상) ───────────────────────────────
+  const GRADES = [
+    { key:"cog", name:"인지지원등급", tag:"가장 경증 · 출발점", base:10 },
+    { key:"g5",  name:"5등급",       tag:"",                  base:10 },
+    { key:"g4",  name:"4등급",       tag:"",                  base:10 },
+    { key:"g3",  name:"3등급",       tag:"",                  base:10 },
+    { key:"g2",  name:"2등급",       tag:"",                  base:10 },
+    { key:"g1",  name:"1등급",       tag:"가장 중증 · PEAK",  base:10 },
+  ];
+  let amtFactor = 1;      // 가입금액 배수 (100만=1, 200만=2)
+
+  // status: none | passed | current | skipped
+  let status = GRADES.map(()=> "none");
+  let yearsAt = GRADES.map(()=> 3);   // 각 등급 체류 연수 (기본 3년, 수정 가능)
+  let current = -1;
+
+  function setYears(i, v){ yearsAt[i] = Math.max(0, parseInt(v)||0); render(); }
+
+  const baseOf = i => Math.round(GRADES[i].base * amtFactor);
+
+  // ── 상태 진행 ─────────────────────────────────────────────
+  function advanceTo(target){
+    if (target <= current) return;
+    if (current >= 0) status[current] = "passed";
+    for (let i=current+1; i<target; i++) if (status[i]==="none") status[i]="skipped";
+    status[target] = "current";
+    current = target;
+    render();
+  }
+  const amountOf = i => status[i]==="passed" ? baseOf(i)*2 : status[i]==="current" ? baseOf(i) : 0;
+
+  // 차근차근(이상) 진행 시 grade k 까지 갔을 때 매달 금액
+  function idealAt(k){
+    let s=0; for(let i=0;i<k;i++) s+=baseOf(i)*2; s+=baseOf(k); return s;
+  }
+
+  // ── 렌더 ─────────────────────────────────────────────────
+  function render(){
+    // 사다리
+    const lad = document.getElementById("ladder"); lad.innerHTML="";
+    GRADES.forEach((g,i)=>{
+      const amt=amountOf(i), st=status[i];
+      const x2 = st==="passed" ? '<span class="x2">×2</span>' : '';
+      const tag = st==="skipped" ? "건너뜀 · 미지급" : st==="current" ? "지금 이 등급 (1배)" :
+                  st==="passed" ? "지나옴 (2배 누적)" : (g.tag||"미도달");
+      const visited = (st==="passed"||st==="current");
+      const yearsField = visited
+        ? `<div class="gyears">체류 <input type="number" min="0" value="${yearsAt[i]}" oninput="setYears(${i},this.value)" onclick="event.stopPropagation()"> 년</div>`
+        : "";
+      const d=document.createElement("div");
+      d.className="rung "+st; d.onclick=()=>advanceTo(i);
+      d.innerHTML=`<div><div class="gname">${g.name}${x2}</div><div class="gtag">${tag}</div></div>
+                   ${yearsField}
+                   <div class="gright"><div class="gamt">${amt>0? amt+" 만원":"—"}</div></div>`;
+      lad.appendChild(d);
+    });
+
+    // 패널 숫자
+    const total = GRADES.reduce((s,_,i)=>s+amountOf(i),0);
+    document.getElementById("total").innerHTML = total+'<small> 만원/월</small>';
+    document.getElementById("year").textContent = (total*12).toLocaleString();
+
+    // 손해 박스
+    const lossBox=document.getElementById("loss");
+    const skips = status.map((s,i)=>s==="skipped"?i:-1).filter(i=>i>=0);
+    if(skips.length){
+      const lost = skips.reduce((s,i)=>s+baseOf(i)*2,0);
+      lossBox.className="loss show";
+      lossBox.innerHTML=`건너뛴 ${skips.length}개 등급 때문에<br><b>매달 ${lost}만원</b>이 사라졌습니다. (차근차근 왔으면 ${total+lost}만원)`;
+    } else { lossBox.className="loss"; lossBox.innerHTML=""; }
+
+    renderChart();
+  }
+
+  function renderChart(){
+    const chart=document.getElementById("chart"); chart.innerHTML="";
+    const ideal=GRADES.map((_,k)=>idealAt(k));
+    const max=Math.max(...ideal,1);
+    GRADES.forEach((g,k)=>{
+      let type, v;
+      if(status[k]==="skipped"){ type="skip"; v=0; }
+      else if(status[k]==="passed"||status[k]==="current"){
+        // 그 등급에 도달한 순간의 실제 매달 총액 (지나온 등급은 2배 + 현재 1배)
+        v=baseOf(k);
+        for(let j=0;j<k;j++) if(status[j]==="passed") v+=baseOf(j)*2;
+        type = status[k]==="current" ? "here" : "reached";
+      } else { type="ghost"; v=ideal[k]; }   // 아직 안 밟음 = 갈 수 있는 길
+      const h = type==="skip" ? 14 : Math.max(3, Math.round(v/max*180));
+      const valTxt = type==="skip" ? "건너뜀" : v;
+      const col=document.createElement("div");
+      col.className="bar-col "+type;
+      col.innerHTML=`<div class="bar-val">${valTxt}</div><div class="bar" style="height:${h}px"></div>
+                     <div class="bar-x">${g.name.replace("등급","").replace("인지지원","인지")}</div>`;
+      chart.appendChild(col);
+    });
+    // 누적 총액 = 등급별 체류기간을 따라 구간별로 합산 (현실 시나리오)
+    let cum=0, leftBehind=0, totalYears=0;
+    const segs=[];
+    for(let k=0;k<GRADES.length;k++){
+      if(status[k]==="passed"||status[k]==="current"){
+        const monthly = leftBehind + baseOf(k);   // 이 등급에 머무는 동안 매달 받는 돈
+        const y = yearsAt[k]||0;
+        cum += monthly*12*y;
+        totalYears += y;
+        segs.push({name:GRADES[k].name, monthly, y});
+        leftBehind += baseOf(k)*2;                 // 이 등급을 떠나면 2배로 잠김
+      }
+    }
+    document.getElementById("cum").textContent=cum.toLocaleString()+" 만원";
+    document.getElementById("yrLabel").textContent=totalYears;
+    document.getElementById("totalYears").textContent=totalYears;
+
+    // 시나리오 요약 줄
+    const sc=document.getElementById("scenario");
+    if(segs.length){
+      sc.innerHTML = "<b>시나리오:</b> " + segs.map(s=>
+        `${s.name} <b>${s.y}년</b>(매달 ${s.monthly}만)`).join('<span class="seg-arrow">→</span>')
+        + `<br>총 <b>${totalYears}년</b> 동안 누적 <b>${cum.toLocaleString()}만원</b> 수령`;
+    } else {
+      sc.innerHTML = `<span class="empty">등급을 클릭하고, 각 등급에서 몇 년 머무는지 넣어보세요. 구간별로 실제 누적 수령액이 계산됩니다.</span>`;
+    }
+  }
+
+  // ── 컨트롤 ────────────────────────────────────────────────
+  function resetSim(){ status=GRADES.map(()=>"none"); current=-1; render(); }
+  function demoLadder(){ resetSim(); let i=0; const t=setInterval(()=>{advanceTo(i);i++;if(i>=GRADES.length)clearInterval(t);},520); }
+  function demoJump(){ resetSim(); advanceTo(0); setTimeout(()=>advanceTo(3),650); }
+
+  document.getElementById("segAmt").addEventListener("click",e=>{
+    if(e.target.tagName!=="BUTTON")return;
+    [...e.currentTarget.children].forEach(b=>b.classList.remove("on"));
+    e.target.classList.add("on");
+    amtFactor = +e.target.dataset.amt/100;
+    document.getElementById("premium").innerHTML = (22030*amtFactor).toLocaleString()+'<small> 원</small>';
+    render();
+  });
+  // 등급별 금액 설정 칸
+  const cfg=document.getElementById("cfgGrid");
+  GRADES.forEach((g,i)=>{
+    const item=document.createElement("label");
+    item.className="cfg-item";
+    item.innerHTML=`${g.name} (만원)<input type="number" value="${g.base}" min="0">`;
+    item.querySelector("input").addEventListener("input",e=>{ GRADES[i].base=+e.target.value||0; render(); });
+    cfg.appendChild(item);
+  });
+
+  render();
+</script>
+</body>
+</html>
