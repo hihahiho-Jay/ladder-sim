@@ -34,6 +34,7 @@
   .seg button.on{background:var(--navy);color:#fff;font-weight:600;}
   .ctl .val{font-size:20px;font-weight:700;color:var(--navy);}
   .ctl .val small{font-size:12px;color:var(--muted);font-weight:500;}
+  .inline-in{width:52px;font-size:18px;font-weight:700;color:var(--navy);border:1px solid var(--line);border-radius:7px;padding:3px 6px;font-family:inherit;text-align:right;margin-right:3px;}
   .ghost-note{font-size:11px;color:var(--gold);margin-left:auto;align-self:center;}
 
   /* main grid */
@@ -86,6 +87,14 @@
   .total25{text-align:right;}
   .total25 .lab{font-size:11px;color:var(--muted);}
   .total25 .num{font-size:26px;font-weight:800;color:var(--gold);}
+  .ledger{min-width:220px;}
+  .led-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--muted);padding:3px 0;}
+  .led-row b{font-size:16px;font-weight:700;}
+  .led-row b.pos{color:var(--gold);} .led-row b.neg{color:#9aa3b2;}
+  .led-row.net{border-top:1.5px solid var(--line);margin-top:5px;padding-top:7px;color:var(--ink);font-weight:600;}
+  .led-row.net b{font-size:24px;font-weight:800;}
+  .led-row.net b.plus{color:var(--green);} .led-row.net b.minus{color:var(--red);}
+  .roi{text-align:right;font-size:12px;color:var(--gold);font-weight:700;margin-top:4px;}
   .chart{display:flex;align-items:flex-end;gap:14px;height:200px;border-bottom:2px solid var(--line);padding-bottom:0;}
   .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
   .bar-val{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;}
@@ -145,6 +154,10 @@
         <div class="val" id="premium">22,030<small> 원</small></div>
       </div>
       <div class="ctl">
+        <div class="ctl-label">납입기간 (가상)</div>
+        <div class="val"><input id="payYears" class="inline-in" type="number" value="30" min="1">년</div>
+      </div>
+      <div class="ctl">
         <div class="ctl-label">총 수령 기간 (각 등급 체류 합산)</div>
         <div class="val"><span id="totalYears">0</span><small> 년</small></div>
       </div>
@@ -178,9 +191,11 @@
           <div class="t">매달 받는 돈 — 내가 밟은 경로</div>
           <div class="s">골드=지나옴 · 네이비=현재 · 회색=갈 수 있는 길 · 빨강=건너뜀(미지급)</div>
         </div>
-        <div class="total25">
-          <div class="lab">이 시나리오 · 총 <span id="yrLabel">0</span>년 누적</div>
-          <div class="num" id="cum">0 만원</div>
+        <div class="ledger">
+          <div class="led-row"><span>받은 돈 (누적 수령)</span><b class="pos" id="cum">0</b></div>
+          <div class="led-row"><span>낸 보험료 (<span id="paidYears">30</span>년 납)</span><b class="neg" id="paid">0</b></div>
+          <div class="led-row net"><span>순이익</span><b id="net">0</b></div>
+          <div class="roi" id="roi"></div>
         </div>
       </div>
       <div class="chart" id="chart"></div>
@@ -213,6 +228,8 @@
     { key:"g1",  name:"1등급",       tag:"가장 중증 · PEAK",  base:10 },
   ];
   let amtFactor = 1;      // 가입금액 배수 (100만=1, 200만=2)
+  let payYears = 30;      // 납입기간 (가상)
+  const PREMIUM_BASE = 22030;  // 월 납입료 가상 기준 (100만 기준, 원)
 
   // status: none | passed | current | skipped
   let status = GRADES.map(()=> "none");
@@ -311,9 +328,20 @@
         leftBehind += baseOf(k)*2;                 // 이 등급을 떠나면 2배로 잠김
       }
     }
-    document.getElementById("cum").textContent=cum.toLocaleString()+" 만원";
-    document.getElementById("yrLabel").textContent=totalYears;
     document.getElementById("totalYears").textContent=totalYears;
+
+    // 정산: 받은 돈 − 낸 보험료 = 순이익
+    const premiumWon = PREMIUM_BASE*amtFactor;
+    const totalPaid = Math.round(premiumWon*12*payYears/10000); // 원→만원
+    const net = cum - totalPaid;
+    const roi = totalPaid>0 ? cum/totalPaid : 0;
+    document.getElementById("cum").textContent = "+"+cum.toLocaleString()+" 만원";
+    document.getElementById("paid").textContent = "−"+totalPaid.toLocaleString()+" 만원";
+    document.getElementById("paidYears").textContent = payYears;
+    const netEl=document.getElementById("net");
+    netEl.textContent = (net>=0?"+":"−")+Math.abs(net).toLocaleString()+" 만원";
+    netEl.className = net>=0 ? "plus" : "minus";
+    document.getElementById("roi").textContent = cum>0 ? `낸 돈의 ${roi.toFixed(1)}배 수령` : "";
 
     // 시나리오 요약 줄
     const sc=document.getElementById("scenario");
@@ -336,8 +364,11 @@
     [...e.currentTarget.children].forEach(b=>b.classList.remove("on"));
     e.target.classList.add("on");
     amtFactor = +e.target.dataset.amt/100;
-    document.getElementById("premium").innerHTML = (22030*amtFactor).toLocaleString()+'<small> 원</small>';
+    document.getElementById("premium").innerHTML = (PREMIUM_BASE*amtFactor).toLocaleString()+'<small> 원</small>';
     render();
+  });
+  document.getElementById("payYears").addEventListener("input",e=>{
+    payYears = Math.max(1, parseInt(e.target.value)||1); render();
   });
   // 등급별 금액 설정 칸
   const cfg=document.getElementById("cfgGrid");
