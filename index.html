@@ -34,7 +34,8 @@
   .seg button.on{background:var(--navy);color:#fff;font-weight:600;}
   .ctl .val{font-size:20px;font-weight:700;color:var(--navy);}
   .ctl .val small{font-size:12px;color:var(--muted);font-weight:500;}
-  .inline-in{width:52px;font-size:18px;font-weight:700;color:var(--navy);border:1px solid var(--line);border-radius:7px;padding:3px 6px;font-family:inherit;text-align:right;margin-right:3px;}
+  .inline-sel{font-size:18px;font-weight:700;color:var(--navy);border:1px solid var(--line);border-radius:7px;padding:4px 8px;font-family:inherit;margin-right:3px;background:#fff;cursor:pointer;}
+  .rung .gyears select{font-size:14px;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:4px 6px;font-family:inherit;background:#fff;cursor:pointer;}
   .ghost-note{font-size:11px;color:var(--gold);margin-left:auto;align-self:center;}
 
   /* main grid */
@@ -155,7 +156,10 @@
       </div>
       <div class="ctl">
         <div class="ctl-label">납입기간 (가상)</div>
-        <div class="val"><input id="payYears" class="inline-in" type="number" value="30" min="1">년</div>
+        <div class="val"><select id="payYears" class="inline-sel">
+          <option>5</option><option>10</option><option>15</option><option>20</option>
+          <option selected>30</option><option>40</option>
+        </select>년</div>
       </div>
       <div class="ctl">
         <div class="ctl-label">총 수령 기간 (각 등급 체류 합산)</div>
@@ -237,6 +241,7 @@
   let current = -1;
 
   function setYears(i, v){ yearsAt[i] = Math.max(0, parseInt(v)||0); render(); }
+  function yearOpts(sel){ let o=""; for(let y=1;y<=15;y++) o+=`<option value="${y}"${y===sel?" selected":""}>${y}</option>`; return o; }
 
   const baseOf = i => Math.round(GRADES[i].base * amtFactor);
 
@@ -267,7 +272,7 @@
                   st==="passed" ? "지나옴 (2배 누적)" : (g.tag||"미도달");
       const visited = (st==="passed"||st==="current");
       const yearsField = visited
-        ? `<div class="gyears">체류 <input type="number" min="0" value="${yearsAt[i]}" oninput="setYears(${i},this.value)" onclick="event.stopPropagation()"> 년</div>`
+        ? `<div class="gyears">체류 <select onchange="setYears(${i},this.value)" onclick="event.stopPropagation()">${yearOpts(yearsAt[i])}</select> 년</div>`
         : "";
       const d=document.createElement("div");
       d.className="rung "+st; d.onclick=()=>advanceTo(i);
@@ -367,7 +372,7 @@
     document.getElementById("premium").innerHTML = (PREMIUM_BASE*amtFactor).toLocaleString()+'<small> 원</small>';
     render();
   });
-  document.getElementById("payYears").addEventListener("input",e=>{
+  document.getElementById("payYears").addEventListener("change",e=>{
     payYears = Math.max(1, parseInt(e.target.value)||1); render();
   });
   // 등급별 금액 설정 칸
