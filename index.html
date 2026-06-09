@@ -427,10 +427,10 @@ function draw(targetCanvas){
   // 차트 안쪽 = 큰 너비 (= 가로 스크롤). 년차당 px = 화면 크기에 따라 자동
   const TR=termYears(), fs=firstActiveStart();
   const N=Math.max(1, TR-fs+1);
-  // 폰 세로 = clientWidth 작음. N=51 → 1년 = 30~40px → 1500~2000px 전체
-  // 화면 = 40년 정도 보임
-  const yearPx = Math.max(8, (window.innerWidth||360)/40);
-  const innerW = Math.max(window.innerWidth-20, N*yearPx + 150);
+  // 40년 = 화면 너비 고정. N <= 40 = 한 화면 (= 스크롤 X) / N > 40 = 가로 스크롤
+  const screenW = (window.innerWidth||360) - 20;
+  const yearPx = screenW / 40;
+  const innerW = N <= 40 ? screenW : Math.round(N * yearPx);
   // chart-inner 너비 강제 (= 캡처 wrapper에는 무관 = 그 때 직접 설정)
   if(!targetCanvas){
     const inner=document.getElementById('chart-inner');
