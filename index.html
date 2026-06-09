@@ -76,6 +76,7 @@
   .punch .div-line{border-top:1px dashed #f5b5b5;margin:6px 0;padding-top:6px}
   .punch .row.paid{font-size:12px;font-weight:400;color:#b06060;letter-spacing:-.3px}
   .punch .row.paid b{font-size:13px;font-weight:500}
+  .punch small{font-size:11px;font-weight:500;color:#b06060;margin-left:3px}
   .legend{display:flex;gap:24px;margin-top:14px;font-size:14px;font-weight:800;color:var(--ink)}
   .legend i{display:inline-block;width:16px;height:16px;border-radius:3px;margin-right:7px;vertical-align:-3px}
   .meta{display:flex;gap:16px;flex-wrap:wrap;font-size:15px;font-weight:700;margin:8px 0 14px;
@@ -399,8 +400,7 @@ function compute(){
   const net = total - Math.round(paidTotal/10000);  // 순수익 (= 만원 단위)
   const paidMan = Math.round(paidTotal/10000);
   document.getElementById('punch').innerHTML=
-    `<div class="row">월 <b>${prem.toLocaleString()}원</b> 내고</div>`+
-    `<div class="row">100세까지 누적 <b>${total.toLocaleString()}만원</b> 수령</div>`+
+    `<div class="row">월 <b>${prem.toLocaleString()}원</b> 내고 누적 <b>${total.toLocaleString()}만원</b> 수령 <small>(100세까지 기준)</small></div>`+
     `<div class="row paid div-line">낸 보험료 = 월 ${prem.toLocaleString()}원 × ${termYears()}년 = <b>${paidMan.toLocaleString()}만원</b></div>`+
     `<div class="row">순수익 = <b>${net.toLocaleString()}만원</b></div>`;
   document.getElementById('meta').innerHTML=
