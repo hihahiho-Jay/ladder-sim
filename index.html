@@ -475,12 +475,12 @@ function draw(targetCanvas){
   for(let i=0;i<=6;i++){const y=pT+ch*i/6;ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(W-pR,y);ctx.stroke();}
   ctx.fillStyle='#2f54d6';ctx.font='bold 11px sans-serif';ctx.textAlign='right';
   for(let i=0;i<=6;i++){const y=pT+ch*i/6;ctx.fillText(Math.round(maxY*(6-i)/6).toLocaleString(),pL-4,y+4);}
-  // x축 = 가입 연령 10세 간격 (= 5세는 겹침)
+  // x축 = 가입 연령 5세 간격
   const startAge=state.age+fs-1, endAge=100;
   const labelAges=[];
-  if(startAge%10!==0) labelAges.push(startAge);
-  for(let a=Math.ceil(startAge/10)*10; a<=endAge; a+=10) labelAges.push(a);
-  ctx.fillStyle='#16203a';ctx.font='bold 12px sans-serif';ctx.textAlign='center';
+  if(startAge%5!==0) labelAges.push(startAge);
+  for(let a=Math.ceil(startAge/5)*5; a<=endAge; a+=5) labelAges.push(a);
+  ctx.fillStyle='#16203a';ctx.font='bold 11px sans-serif';ctx.textAlign='center';
   labelAges.forEach(a=>{
     const yr=a-state.age+1;
     const idx=yr-fs;
