@@ -448,15 +448,15 @@ function draw(targetCanvas){
     return Math.ceil(raw/1000)*1000;
   };
   const niceStep=(v,unit)=>Math.max(unit, Math.ceil(v*1.18/4/unit)*unit);
-  const stepY=niceStepNice(Math.max(...ys,1));
   const stepC=niceStep(Math.max(...cs,1),50);
-  const maxY=Math.min(700, stepY*4);  // Y축 매년 = 700 상한
+  // Y축 매년 = 600 고정 + 100 단위 6분할 (= 0/100/200/300/400/500/600)
+  const maxY=600;
   const maxC=stepC*4;
-  // y축 좌측 = 매년 받는 금액
+  // y축 좌측 = 매년 받는 금액 = 6분할 (= 100 단위)
   ctx.strokeStyle='#e4e8f0';ctx.lineWidth=1;
-  for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(W-pR,y);ctx.stroke();}
+  for(let i=0;i<=6;i++){const y=pT+ch*i/6;ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(W-pR,y);ctx.stroke();}
   ctx.fillStyle='#2f54d6';ctx.font='bold 11px sans-serif';ctx.textAlign='right';
-  for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.fillText(Math.round(maxY*(4-i)/4).toLocaleString(),pL-4,y+4);}
+  for(let i=0;i<=6;i++){const y=pT+ch*i/6;ctx.fillText(Math.round(maxY*(6-i)/6).toLocaleString(),pL-4,y+4);}
   // x축 = 가입 연령 10세 간격 (= 5세는 겹침)
   const startAge=state.age+fs-1, endAge=100;
   const labelAges=[];
