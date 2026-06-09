@@ -237,20 +237,20 @@ function setStart(i,val,fast){
 }
 
 function quickUpdate(){
-  // 막대 위치/너비만 직접 변경 (= touchmove 이벤트 끊김 방지)
+  // 드래그 중 = 막대 위치만 (= 그래프/숫자 X = 가볍게 = 부드러운 움직임)
   const rows=document.getElementById('t-rows');
   if(!rows) return;
+  const TR=termYears();
   GRADES.forEach((g,i)=>{
     const row=rows.children[i];
     if(!row) return;
     const bar=row.querySelector('.bar');
     if(!state.active[i] || !bar) return;
     const start=state.start[i], len=barLen(i);
-    const TR=termYears();
     bar.style.left=`${(start-1)/TR*100}%`;
     bar.style.width=`${len/TR*100}%`;
   });
-  compute();
+  // compute() = endDrag에서 호출 = 그래프/숫자 갱신
 }
 
 function toggleActive(i){
