@@ -404,10 +404,8 @@ function draw(targetCanvas){
   const overlayH = 22*6 + 6;
   const pL=62,pR=70,pT=overlayH,pB=36,cw=W-pL-pR,ch=H-pT-pB;
   const ysAll=chartData.y, csAll=chartData.c;
-  // 능동 자르기 = 첫 활성 시작 시점 ~ 100세까지만 표시
-  const TR=termYears(), fs=firstActiveStart();
+  // 능동 자르기 = 첫 활성 시작 시점 ~ 100세까지만 표시 (TR, fs 위에서 정의됨)
   const ys=ysAll.slice(fs-1), cs=csAll.slice(fs-1);
-  const N=Math.max(1, ys.length);  // 표시 구간 길이
   // Y축 좌측(매년) = 깔끔 단위 [10/20/50/100/200/500/1000]
   // Y축 우측(누적) = 50 배수
   const niceList=[10,20,50,100,200,500,1000,2000,5000];
