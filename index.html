@@ -32,10 +32,14 @@
     color:var(--ink);user-select:none;transition:.12s;line-height:1.2}
   .check.on{border-color:#dc2626;color:#dc2626;background:#fff5f5}
   /* 차트 영역 = overflow-x: auto (= 가로 스크롤) + overlay 막대 */
-  .chartbox{position:relative;height:260px;margin-top:6px;overflow-x:auto;overflow-y:hidden;
+  .chartbox{position:relative;height:300px;margin-top:6px;overflow-x:auto;overflow-y:hidden;
     -webkit-overflow-scrolling:touch;touch-action:pan-x;background:#fafbfd;border-radius:10px}
-  .chart-inner{position:relative;height:260px}
-  canvas#chart{display:block;height:260px}
+  .chart-inner{position:relative;height:300px}
+  canvas#chart{display:block;height:300px}
+  /* 등급 시작 나이 표시 = 점선 + 라벨 */
+  .age-line{position:absolute;width:1.5px;background:repeating-linear-gradient(to bottom,#dc2626 0,#dc2626 3px,transparent 3px,transparent 6px);pointer-events:none;z-index:5}
+  .age-label{position:absolute;background:#dc2626;color:#fff;font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap;transform:translateX(-50%);pointer-events:none;z-index:6;line-height:1.2}
+  .bar-overlay.dragging .age-line,.bar-overlay.dragging .age-label{display:none}
   .bar-overlay{position:absolute;left:0;top:0;bottom:0;pointer-events:none}
   .bar-row{position:absolute;left:0;right:0;height:20px;pointer-events:none}
   .bar{position:absolute;top:2px;bottom:2px;border-radius:5px;cursor:grab;
@@ -117,10 +121,6 @@
         <canvas id="chart"></canvas>
         <div class="bar-overlay" id="bar-overlay"></div>
       </div>
-    </div>
-    <div class="legend">
-      <span><i style="background:var(--blue)"></i>그 해 받는 생활자금</span>
-      <span><i style="background:var(--teal)"></i>누적 수령액</span>
     </div>
   </div>
 
@@ -261,10 +261,11 @@ let drag=null;
 // Pointer Events = 마우스/터치/펜 통합 = iOS Safari 안정
 function startDrag(e,i){
   e.preventDefault();
-  // 그래프 cw 기준 = N년이 cw 픽셀. 1년 = cw/(N-1)
   const cw = chartGeom ? chartGeom.cw : 300;
   const N = chartGeom ? Math.max(1, chartGeom.N) : 1;
   drag={i, startX:e.clientX, origStart:state.start[i], rowW:cw, N, pointerId:e.pointerId};
+  const overlay=document.getElementById('bar-overlay');
+  if(overlay) overlay.classList.add('dragging');  // 점선/라벨 숨김
   // pointer capture = 손가락이 바 밖으로 나가도 이벤트 유지 (= iOS 핵심)
   try{ e.target.setPointerCapture(e.pointerId); }catch(_){}
   document.addEventListener('pointermove',onDrag);
@@ -312,14 +313,15 @@ function buildOverlay(){
   overlay.innerHTML='';
   if(!chartGeom) return;
   const {pL, pT, ch, cw, N, fs} = chartGeom;
-  const rowH = 22;
+  const rowH = 18;  // 좀 더 컴팩트
   overlay.style.left = pL+'px';
   overlay.style.top = pT+'px';
   overlay.style.width = cw+'px';
   overlay.style.height = (rowH*6)+'px';
+  overlay.style.overflow='visible';
   for(let row=0; row<6; row++){
-    const i = 5-row;  // row 0 = 1등급 위, row 5 = 인지지원 아래
-    const r=document.createElement('div');r.className='bar-row';r.style.top=(row*rowH)+'px';
+    const i = 5-row;
+    const r=document.createElement('div');r.className='bar-row';r.style.top=(row*rowH)+'px';r.style.height=rowH+'px';
     overlay.appendChild(r);
     if(!state.active[i]) continue;
     const g=GRADES[i];
@@ -339,6 +341,19 @@ function buildOverlay(){
     bar.innerHTML = `${amt}만${upperFired&&g!=='1등급'?'<span class="x2">×2</span>':''}`;
     bar.addEventListener('pointerdown',e=>startDrag(e,i));
     r.appendChild(bar);
+    // 시작 점선 + 나이 라벨 (= 막대 시작점에서 위로)
+    const onsetAge = state.age + start - 1;
+    const lineH = row*rowH + pT;  // overlay top(0) ~ canvas top까지 길이
+    const line=document.createElement('div');line.className='age-line';
+    line.style.left = Math.max(0,x1)+'px';
+    line.style.top = (-pT)+'px';
+    line.style.height = lineH+'px';
+    overlay.appendChild(line);
+    const lab=document.createElement('div');lab.className='age-label';
+    lab.style.left = Math.max(14, x1)+'px';
+    lab.style.top = (-pT-2)+'px';
+    lab.textContent = onsetAge+'세';
+    overlay.appendChild(lab);
   }
 }
 function yearly(){
@@ -392,8 +407,8 @@ function draw(targetCanvas){
   const TR=termYears(), fs=firstActiveStart();
   const N=Math.max(1, TR-fs+1);
   // 폰 세로 = clientWidth 작음. N=51 → 1년 = 30~40px → 1500~2000px 전체
-  // 화면 = 30년 정도 보임 (= 폰 너비 / 30)
-  const yearPx = Math.max(11, (window.innerWidth||360)/30);
+  // 화면 = 40년 정도 보임
+  const yearPx = Math.max(8, (window.innerWidth||360)/40);
   const innerW = Math.max(window.innerWidth-20, N*yearPx + 150);
   // chart-inner 너비 강제 (= 캡처 wrapper에는 무관 = 그 때 직접 설정)
   if(!targetCanvas){
@@ -401,7 +416,7 @@ function draw(targetCanvas){
     if(inner){ inner.style.width = innerW+'px'; }
     cv.style.width = innerW+'px';
   }
-  const W=cv.clientWidth, H=260;
+  const W=cv.clientWidth, H=300;
   cv.width=W*dpr; cv.height=H*dpr;
   const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
   // 등급 막대 = 그래프 본체 안 (= 매년 받는 막대 위에 overlay)
