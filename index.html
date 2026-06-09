@@ -328,8 +328,8 @@ function buildTetris(){
     });
     const amt = (g!=='1등급' && upperFired) ? limitOf(g,i)*2 : limitOf(g,i);
     bar.innerHTML=`${amt}만/년${upperFired&&g!=='1등급'?'<span class="x2">×2</span>':''}`;
-    bar.onmousedown=e=>startDrag(e,i);
-    bar.ontouchstart=e=>startDrag(e,i);
+    bar.addEventListener('mousedown',e=>startDrag(e,i));
+    bar.addEventListener('touchstart',e=>startDrag(e,i),{passive:false});
     rowEl.appendChild(bar);
   });
 
