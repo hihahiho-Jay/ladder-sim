@@ -440,7 +440,8 @@ function draw(targetCanvas){
   // H = 화면 높이의 50% (= 폰마다 자동, min 320 / max 540)
   const H = Math.max(320, Math.min(Math.round((window.innerHeight||720)*0.5), 540));
   if(!targetCanvas){
-    const cb=document.getElementById('chartbox'); if(cb) cb.style.height=H+'px';
+    // chartbox = canvas + padding-top(20) 같이 = 잘림 방지
+    const cb=document.getElementById('chartbox'); if(cb) cb.style.height=(H+20)+'px';
     const ci=document.getElementById('chart-inner'); if(ci) ci.style.height=H+'px';
     cv.style.height=H+'px';
   }
