@@ -39,8 +39,9 @@
   canvas#chart{display:block;height:420px}
   /* 등급 시작 나이 표시 = 점선 + 라벨 */
   .age-line{position:absolute;width:1.5px;background:repeating-linear-gradient(to bottom,#dc2626 0,#dc2626 3px,transparent 3px,transparent 6px);pointer-events:none;z-index:5}
+  .age-line-down{position:absolute;width:1.5px;background:repeating-linear-gradient(to bottom,#9ca3af 0,#9ca3af 3px,transparent 3px,transparent 6px);pointer-events:none;z-index:1}
   .age-label{position:absolute;background:#dc2626;color:#fff;font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap;transform:translateX(-50%);pointer-events:none;z-index:6;line-height:1.2}
-  .bar-overlay.dragging .age-line,.bar-overlay.dragging .age-label{display:none}
+  .bar-overlay.dragging .age-line,.bar-overlay.dragging .age-line-down,.bar-overlay.dragging .age-label{display:none}
   .bar-overlay{position:absolute;left:0;top:0;bottom:0;pointer-events:none}
   .bar-row{position:absolute;left:0;right:0;height:20px;pointer-events:none;overflow:visible}
   .bar{position:absolute;top:2px;bottom:2px;border-radius:5px;cursor:grab;
@@ -352,9 +353,9 @@ function buildOverlay(){
     bar.innerHTML = `${amt}만${upperFired&&g!=='1등급'?'<span class="x2">×2</span>':''}`;
     bar.addEventListener('pointerdown',e=>startDrag(e,i));
     r.appendChild(bar);
-    // 시작 점선 + 나이 라벨 = 계단식 (= 각 막대 row 위에 = 등급별 다른 세로 위치)
+    // 시작 점선 + 나이 라벨 = 계단식
     const onsetAge = state.age + start - 1;
-    // 라벨 = row 위 14px (= 자기 row 위 = 등급별 자동 세로 분리)
+    // 위 점선 (빨강) + 라벨
     const line=document.createElement('div');line.className='age-line';
     line.style.left = Math.max(0,x1)+'px';
     line.style.top = '-14px';
@@ -365,6 +366,13 @@ function buildOverlay(){
     lab.style.top = '-16px';
     lab.textContent = onsetAge+'세';
     r.appendChild(lab);
+    // 아래 점선 (회색) = 막대 시작점 → X축 (= 매년 그래프 바닥)
+    const lineDown=document.createElement('div');lineDown.className='age-line-down';
+    lineDown.style.left = Math.max(0,x1)+'px';
+    lineDown.style.top = rowH+'px';
+    const dh = chartGeom.axisOffset - (row+1)*rowH;
+    lineDown.style.height = Math.max(0, dh)+'px';
+    r.appendChild(lineDown);
   }
 }
 function yearly(){
@@ -511,7 +519,7 @@ function draw(targetCanvas){
     ctx.fillText(txt,bx+tw-7,by+14);
   }
   // overlay 정렬용 좌표 저장
-  if(!targetCanvas) chartGeom = {pL, pT:barTop, ch, cw, N, fs};
+  if(!targetCanvas) chartGeom = {pL, pT:barTop, ch, cw, N, fs, axisOffset: pT+ch-barTop};
 }
 function render(){buildChecks();compute();buildOverlay();}
 document.getElementById('saveBtn').onclick=()=>{
