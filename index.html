@@ -291,7 +291,7 @@ function endDrag(e){
   if(wasDragging) render();
 }
 
-const SHORT_LABEL=['1.인지','2.5급','3.4급','4.3급','5.2급','6.1급'];
+const SHORT_LABEL=['인지','5급','4급','3급','2급','1급'];
 function buildChecks(){
   const box=document.getElementById('checks');
   box.innerHTML='';
@@ -404,11 +404,11 @@ function draw(targetCanvas){
   const W=cv.clientWidth, H=260;
   cv.width=W*dpr; cv.height=H*dpr;
   const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
-  // 위 = 그래프 본체 / 아래 = 막대 overlay + X축 라벨
-  const overlayH = 22*6 + 6;
-  const pL=62, pR=70, pT=22, axisH=22, pB=overlayH+axisH;
+  // 등급 막대 = 그래프 본체 안 (= 매년 받는 막대 위에 overlay)
+  const overlayH = 18*6 + 4;
+  const pL=44, pR=44, pT=18, pB=30;  // Y축 좌측 여백 = 62→44, 좌우 컴팩트
   const cw=W-pL-pR, ch=H-pT-pB;
-  const barTop = pT+ch+8;  // 막대 시작 y = 그래프 본체 아래
+  const barTop = pT + 2;  // 막대 시작 = 그래프 본체 위 (= 안쪽 overlay)
   const ysAll=chartData.y, csAll=chartData.c;
   // 능동 자르기 = 첫 활성 시작 시점 ~ 100세까지만 표시 (TR, fs 위에서 정의됨)
   const ys=ysAll.slice(fs-1), cs=csAll.slice(fs-1);
@@ -427,24 +427,37 @@ function draw(targetCanvas){
   // y축 좌측 = 매년 받는 금액
   ctx.strokeStyle='#e4e8f0';ctx.lineWidth=1;
   for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(W-pR,y);ctx.stroke();}
-  ctx.fillStyle='#2f54d6';ctx.font='bold 14px sans-serif';ctx.textAlign='right';
-  for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.fillText(Math.round(maxY*(4-i)/4).toLocaleString(),pL-8,y+5);}
-  // x축 = 가입 연령 5세 간격 (= 시작세 ~ 100세)
+  ctx.fillStyle='#2f54d6';ctx.font='bold 11px sans-serif';ctx.textAlign='right';
+  for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.fillText(Math.round(maxY*(4-i)/4).toLocaleString(),pL-4,y+4);}
+  // x축 = 가입 연령 10세 간격 (= 5세는 겹침)
   const startAge=state.age+fs-1, endAge=100;
   const labelAges=[];
-  if(startAge%5!==0) labelAges.push(startAge);  // 시작 = 5의 배수 아니면 같이 표시
-  for(let a=Math.ceil(startAge/5)*5; a<=endAge; a+=5) labelAges.push(a);
-  ctx.fillStyle='#16203a';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+  if(startAge%10!==0) labelAges.push(startAge);
+  for(let a=Math.ceil(startAge/10)*10; a<=endAge; a+=10) labelAges.push(a);
+  ctx.fillStyle='#16203a';ctx.font='bold 12px sans-serif';ctx.textAlign='center';
   labelAges.forEach(a=>{
-    const yr=a-state.age+1;          // 그 나이의 년차 (1부터)
-    const idx=yr-fs;                  // 표시 인덱스
+    const yr=a-state.age+1;
+    const idx=yr-fs;
     const x=pL+cw*idx/Math.max(1,N-1);
-    ctx.fillText(a+'세',x,barTop-4);
+    ctx.fillText(a+'세',x,H-10);
   });
   const xAt=i=>pL+cw*i/Math.max(1,N-1);
-  // 막대 = 진한 파랑
-  const bw=cw/N*0.65;ctx.fillStyle='#2f54d6';
-  ys.forEach((v,i)=>{if(v>0){const h=ch*v/maxY;ctx.fillRect(xAt(i)-bw/2,pT+ch-h,bw,h);}});
+  // 막대 = 그 시점 활성 등급 수에 따라 파랑 채도 변화 (= 20%→100%)
+  const bw=cw/N*0.65;
+  ys.forEach((v,i)=>{
+    if(v<=0) return;
+    const y=i+fs;  // y년차
+    let cnt=0;
+    GRADES.forEach((g,gi)=>{
+      if(!state.active[gi]) return;
+      if(y<state.start[gi] || y>=state.start[gi]+barLen(gi)) return;
+      cnt++;
+    });
+    const sat = Math.max(20, Math.min(100, 20 + cnt*16));  // 1개=36%, 2개=52%, ..., 6개=116→100
+    ctx.fillStyle = `hsl(220,${sat}%,${65-cnt*6}%)`;
+    const h=ch*v/maxY;
+    ctx.fillRect(xAt(i)-bw/2,pT+ch-h,bw,h);
+  });
   // 누적 라인 = 빨강 + 굵게
   ctx.strokeStyle='#dc2626';ctx.lineWidth=4;ctx.beginPath();
   cs.forEach((v,i)=>{const x=xAt(i),y=pT+ch-ch*v/maxC;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
