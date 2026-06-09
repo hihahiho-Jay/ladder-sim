@@ -31,12 +31,12 @@
     padding:9px 4px;text-align:center;cursor:pointer;font-size:13px;font-weight:800;
     color:var(--ink);user-select:none;transition:.12s;line-height:1.2}
   .check.on{border-color:#dc2626;color:#dc2626;background:#fff5f5}
-  /* 차트 영역 = 가로 스크롤만. 세로 = visible (= 위쪽 라벨 잘림 방지) */
-  .chartbox{position:relative;height:300px;margin-top:6px;overflow-x:auto;overflow-y:visible;
+  /* 차트 영역 = 가로 스크롤만. 세로 = visible. 카드 거의 가득 */
+  .chartbox{position:relative;height:420px;margin-top:4px;overflow-x:auto;overflow-y:visible;
     -webkit-overflow-scrolling:touch;touch-action:pan-x;background:#fafbfd;border-radius:10px;
-    padding-top:14px}
-  .chart-inner{position:relative;height:300px}
-  canvas#chart{display:block;height:300px}
+    padding-top:20px}
+  .chart-inner{position:relative;height:420px}
+  canvas#chart{display:block;height:420px}
   /* 등급 시작 나이 표시 = 점선 + 라벨 */
   .age-line{position:absolute;width:1.5px;background:repeating-linear-gradient(to bottom,#dc2626 0,#dc2626 3px,transparent 3px,transparent 6px);pointer-events:none;z-index:5}
   .age-label{position:absolute;background:#dc2626;color:#fff;font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap;transform:translateX(-50%);pointer-events:none;z-index:6;line-height:1.2}
@@ -423,14 +423,14 @@ function draw(targetCanvas){
     if(inner){ inner.style.width = innerW+'px'; }
     cv.style.width = innerW+'px';
   }
-  const W=cv.clientWidth, H=300;
+  const W=cv.clientWidth, H=420;
   cv.width=W*dpr; cv.height=H*dpr;
   const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
-  // 영역 분리 = 위 = 등급 막대 / 아래 = 매년 받는 막대그래프
+  // 영역 분리 = 위 = 등급 막대 (캔버스 거의 최상단) / 아래 = 매년 그래프 (= 크게)
   const overlayH = 18*6 + 4;
   const pL=44, pR=44;
-  const barTop = 14;                       // 등급 막대 시작 (= 위쪽 영역)
-  const pT = barTop + overlayH + 8;        // 매년 그래프 시작 y
+  const barTop = 6;                        // 등급 막대 = 거의 위쪽
+  const pT = barTop + overlayH + 10;
   const pB = 28;
   const cw=W-pL-pR, ch=H-pT-pB;
   const ysAll=chartData.y, csAll=chartData.c;
