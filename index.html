@@ -386,7 +386,8 @@ function draw(targetCanvas){
   const TR=termYears(), fs=firstActiveStart();
   const N=Math.max(1, TR-fs+1);
   // 폰 세로 = clientWidth 작음. N=51 → 1년 = 30~40px → 1500~2000px 전체
-  const yearPx = Math.max(34, (window.innerWidth||360)/15);  // 화면 = 15년 정도 보임
+  // 화면 = 30년 정도 보임 (= 폰 너비 / 30)
+  const yearPx = Math.max(11, (window.innerWidth||360)/30);
   const innerW = Math.max(window.innerWidth-20, N*yearPx + 150);
   // chart-inner 너비 강제 (= 캡처 wrapper에는 무관 = 그 때 직접 설정)
   if(!targetCanvas){
