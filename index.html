@@ -223,18 +223,34 @@ function constraintMax(i){
   if(DURATION[g]===999) return termYears();
   return termYears() - DURATION[g] + 1;
 }
-function setStart(i,val){
+function setStart(i,val,fast){
   state.start[i]=Math.max(constraintMin(i), Math.min(constraintMax(i), val));
-  // 연쇄 cascade = 위 등급(인덱스 > i) = 항상 직전 활성 등급 + 1 유지
-  // i+1부터 순서대로 = constraintMin 재계산 → 밀려야 함
   for(let k=i+1;k<GRADES.length;k++){
     if(!state.active[k]) continue;
-    const minK = constraintMin(k);  // 직전 활성 등급 start + 1 자동 계산
+    const minK = constraintMin(k);
     if(state.start[k] < minK){
       state.start[k] = Math.min(constraintMax(k), minK);
     }
   }
-  render();
+  if(fast) quickUpdate();   // 드래그 중 = 막대만 이동 (= DOM 재생성 X)
+  else render();
+}
+
+function quickUpdate(){
+  // 막대 위치/너비만 직접 변경 (= touchmove 이벤트 끊김 방지)
+  const rows=document.getElementById('t-rows');
+  if(!rows) return;
+  GRADES.forEach((g,i)=>{
+    const row=rows.children[i];
+    if(!row) return;
+    const bar=row.querySelector('.bar');
+    if(!state.active[i] || !bar) return;
+    const start=state.start[i], len=barLen(i);
+    const TR=termYears();
+    bar.style.left=`${(start-1)/TR*100}%`;
+    bar.style.width=`${len/TR*100}%`;
+  });
+  compute();
 }
 
 function toggleActive(i){
@@ -270,14 +286,16 @@ function onDrag(e){
   const dx=cx-drag.startX;
   const yearPx=drag.rowW/termYears();
   const newStart=Math.round(drag.origStart + dx/yearPx);
-  if(newStart!==state.start[drag.i]) setStart(drag.i, newStart);
+  if(newStart!==state.start[drag.i]) setStart(drag.i, newStart, true);  // fast 모드 = DOM 재생성 X
 }
 function endDrag(){
+  const wasDragging = !!drag;
   drag=null;
   document.removeEventListener('mousemove',onDrag);
   document.removeEventListener('mouseup',endDrag);
   document.removeEventListener('touchmove',onDrag);
   document.removeEventListener('touchend',endDrag);
+  if(wasDragging) render();  // 드래그 끝 = 전체 갱신 (= 라벨/상태 일치)
 }
 
 function buildTetris(){
