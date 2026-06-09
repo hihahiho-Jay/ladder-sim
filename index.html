@@ -450,7 +450,8 @@ function draw(targetCanvas){
   const niceStep=(v,unit)=>Math.max(unit, Math.ceil(v*1.18/4/unit)*unit);
   const stepY=niceStepNice(Math.max(...ys,1));
   const stepC=niceStep(Math.max(...cs,1),50);
-  const maxY=stepY*4, maxC=stepC*4;
+  const maxY=Math.min(700, stepY*4);  // Y축 매년 = 700 상한
+  const maxC=stepC*4;
   // y축 좌측 = 매년 받는 금액
   ctx.strokeStyle='#e4e8f0';ctx.lineWidth=1;
   for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(W-pR,y);ctx.stroke();}
