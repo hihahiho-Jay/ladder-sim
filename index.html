@@ -497,6 +497,18 @@ function draw(targetCanvas){
   // 우측 누적 숫자 = 노랑
   ctx.textAlign='left';ctx.fillStyle='#d97706';ctx.font='bold 11px sans-serif';
   for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.fillText(Math.round(maxC*(4-i)/4).toLocaleString(),W-pR+4,y+4);}
+  // 끝점 옆 = 총 누적 금액 박스 (= 노랑 박스 + 흰 글자)
+  const finalCum=cs[N-1];
+  if(finalCum>0){
+    ctx.font='bold 13px sans-serif';ctx.textAlign='right';
+    const txt=finalCum.toLocaleString()+'만';
+    const tw=ctx.measureText(txt).width+14;
+    const bx=lx-tw-8, by=Math.max(pT, ly-22);
+    ctx.fillStyle='#f59e0b';
+    ctx.fillRect(bx,by,tw,20);
+    ctx.fillStyle='#fff';
+    ctx.fillText(txt,bx+tw-7,by+14);
+  }
   // overlay 정렬용 좌표 저장
   if(!targetCanvas) chartGeom = {pL, pT:barTop, ch, cw, N, fs};
 }
