@@ -31,12 +31,12 @@
     padding:9px 4px;text-align:center;cursor:pointer;font-size:13px;font-weight:800;
     color:var(--ink);user-select:none;transition:.12s;line-height:1.2}
   .check.on{border-color:#dc2626;color:#dc2626;background:#fff5f5}
-  /* 차트 영역 = 가로 스크롤만. 세로 = visible. 카드 거의 가득 */
-  .chartbox{position:relative;height:420px;margin-top:4px;overflow-x:auto;overflow-y:visible;
+  /* 차트 영역 = 가로 스크롤만. 세로 = JS로 화면 비율에 맞춰 동적 */
+  .chartbox{position:relative;margin-top:4px;overflow-x:auto;overflow-y:visible;
     -webkit-overflow-scrolling:touch;touch-action:pan-x;background:#fafbfd;border-radius:10px;
     padding-top:20px}
-  .chart-inner{position:relative;height:420px}
-  canvas#chart{display:block;height:420px}
+  .chart-inner{position:relative}
+  canvas#chart{display:block}
   /* 등급 시작 나이 표시 = 점선 + 라벨 */
   .age-line{position:absolute;width:1.5px;background:repeating-linear-gradient(to bottom,#dc2626 0,#dc2626 3px,transparent 3px,transparent 6px);pointer-events:none;z-index:5}
   .age-line-down{position:absolute;width:1.5px;background:repeating-linear-gradient(to bottom,#9ca3af 0,#9ca3af 3px,transparent 3px,transparent 6px);pointer-events:none;z-index:1}
@@ -437,7 +437,14 @@ function draw(targetCanvas){
     if(inner){ inner.style.width = innerW+'px'; }
     cv.style.width = innerW+'px';
   }
-  const W=cv.clientWidth, H=420;
+  // H = 화면 높이의 50% (= 폰마다 자동, min 320 / max 540)
+  const H = Math.max(320, Math.min(Math.round((window.innerHeight||720)*0.5), 540));
+  if(!targetCanvas){
+    const cb=document.getElementById('chartbox'); if(cb) cb.style.height=H+'px';
+    const ci=document.getElementById('chart-inner'); if(ci) ci.style.height=H+'px';
+    cv.style.height=H+'px';
+  }
+  const W=cv.clientWidth;
   cv.width=W*dpr; cv.height=H*dpr;
   const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
   // 영역 분리 = 위 = 등급 막대 (캔버스 거의 최상단) / 아래 = 매년 그래프 (= 크게)
@@ -550,6 +557,7 @@ document.getElementById('saveBtn').onclick=()=>{
   },50);
 };
 render();
+window.addEventListener('resize',()=>render());
 </script>
 </body>
 </html>
