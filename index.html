@@ -42,7 +42,7 @@
   .age-label{position:absolute;background:#dc2626;color:#fff;font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap;transform:translateX(-50%);pointer-events:none;z-index:6;line-height:1.2}
   .bar-overlay.dragging .age-line,.bar-overlay.dragging .age-label{display:none}
   .bar-overlay{position:absolute;left:0;top:0;bottom:0;pointer-events:none}
-  .bar-row{position:absolute;left:0;right:0;height:20px;pointer-events:none}
+  .bar-row{position:absolute;left:0;right:0;height:20px;pointer-events:none;overflow:visible}
   .bar{position:absolute;top:2px;bottom:2px;border-radius:5px;cursor:grab;
     display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;
     box-shadow:0 1px 3px rgba(0,0,0,.15);user-select:none;-webkit-user-select:none;
@@ -348,19 +348,19 @@ function buildOverlay(){
     bar.innerHTML = `${amt}만${upperFired&&g!=='1등급'?'<span class="x2">×2</span>':''}`;
     bar.addEventListener('pointerdown',e=>startDrag(e,i));
     r.appendChild(bar);
-    // 시작 점선 + 나이 라벨 (= 막대 시작점에서 위로)
+    // 시작 점선 + 나이 라벨 = 계단식 (= 각 막대 row 위에 = 등급별 다른 세로 위치)
     const onsetAge = state.age + start - 1;
-    const lineH = row*rowH + pT;  // overlay top(0) ~ canvas top까지 길이
+    // 라벨 = row 위 14px (= 자기 row 위 = 등급별 자동 세로 분리)
     const line=document.createElement('div');line.className='age-line';
     line.style.left = Math.max(0,x1)+'px';
-    line.style.top = (-pT)+'px';
-    line.style.height = lineH+'px';
-    overlay.appendChild(line);
+    line.style.top = '-14px';
+    line.style.height = '14px';
+    r.appendChild(line);
     const lab=document.createElement('div');lab.className='age-label';
     lab.style.left = Math.max(14, x1)+'px';
-    lab.style.top = (-pT-2)+'px';
+    lab.style.top = '-16px';
     lab.textContent = onsetAge+'세';
-    overlay.appendChild(lab);
+    r.appendChild(lab);
   }
 }
 function yearly(){
