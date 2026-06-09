@@ -49,6 +49,7 @@
     text-align:center;padding:0 5px;overflow:hidden;white-space:nowrap;
     touch-action:none;-webkit-touch-callout:none;pointer-events:auto;min-width:30px}
   .bar:active{cursor:grabbing;opacity:.85}
+  .bar.dragging-self{outline:3px solid #fff;box-shadow:0 0 0 4px #16203a,0 4px 12px rgba(0,0,0,.3);z-index:10}
   .bar.g0{background:hsl(0,95%,50%)}
   .bar.g1{background:hsl(0,80%,55%)}
   .bar.g2{background:hsl(0,60%,58%)}
@@ -266,7 +267,9 @@ function startDrag(e,i){
   const N = chartGeom ? Math.max(1, chartGeom.N) : 1;
   drag={i, startX:e.clientX, origStart:state.start[i], rowW:cw, N, pointerId:e.pointerId};
   const overlay=document.getElementById('bar-overlay');
-  if(overlay) overlay.classList.add('dragging');  // 점선/라벨 숨김
+  if(overlay) overlay.classList.add('dragging');
+  // 드래그 막대 시각 강조 = 어느 막대 잡았는지 명확
+  e.currentTarget.classList.add('dragging-self');
   // pointer capture = 손가락이 바 밖으로 나가도 이벤트 유지 (= iOS 핵심)
   try{ e.target.setPointerCapture(e.pointerId); }catch(_){}
   document.addEventListener('pointermove',onDrag);
@@ -290,6 +293,9 @@ function endDrag(e){
   document.removeEventListener('pointermove',onDrag);
   document.removeEventListener('pointerup',endDrag);
   document.removeEventListener('pointercancel',endDrag);
+  const overlay=document.getElementById('bar-overlay');
+  if(overlay) overlay.classList.remove('dragging');
+  document.querySelectorAll('.bar.dragging-self').forEach(b=>b.classList.remove('dragging-self'));
   if(wasDragging) render();
 }
 
