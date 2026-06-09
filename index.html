@@ -40,8 +40,11 @@
   .tetris{padding-right:180px}  /* 우측 = 토글 버튼 공간 */
   .bar{position:absolute;top:3px;bottom:3px;border-radius:6px;cursor:grab;
     display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;
-    box-shadow:0 1px 4px rgba(0,0,0,.15);user-select:none;text-align:center;padding:0 6px;overflow:hidden;white-space:nowrap}
+    box-shadow:0 1px 4px rgba(0,0,0,.15);user-select:none;-webkit-user-select:none;
+    text-align:center;padding:0 6px;overflow:hidden;white-space:nowrap;
+    touch-action:none;-webkit-touch-callout:none}
   .bar:active{cursor:grabbing;opacity:.85}
+  .tetris-row{touch-action:pan-y}  /* row 본체 = 세로 스크롤만 허용 */
   /* 빨강 채도 그라데이션 = 인지지원(아래) 진한 빨강 → 1등급(위) 옅은 회색빛 */
   .bar.g0{background:hsl(0,95%,50%)}  /* 인지지원 = 채도 95% */
   .bar.g1{background:hsl(0,80%,55%)}  /* 5등급 = 채도 80% */
