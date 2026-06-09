@@ -25,34 +25,34 @@
   .seg button{flex:1;border:none;background:var(--paper);padding:9px 4px;font-size:13px;font-weight:700;color:var(--ink2);cursor:pointer}
   .seg button.on{background:var(--blue);color:#fff}
   select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-weight:700;color:var(--ink);background:var(--paper)}
-  /* 테트리스 = 가로 시간 축 + 등급별 바 드래그 */
-  .tetris{background:#fafbfd;border:2px solid var(--line);border-radius:12px;padding:14px 18px 18px;margin-top:8px;position:relative;overflow:hidden}
-  .tetris-axis{position:relative;height:18px;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:6px;margin-left:170px;margin-right:8px}
-  .tetris-axis span{position:absolute;transform:translateX(-50%)}
-  .tetris-grid{position:absolute;left:170px;right:18px;top:42px;bottom:18px;pointer-events:none;z-index:0}
-  .tetris-grid .vline{position:absolute;top:0;bottom:0;width:1px;background:#e6eaf2}
-  .tetris-rows{display:flex;flex-direction:column-reverse;gap:7px;position:relative;z-index:1}
-  .tetris-row{position:relative;height:44px;background:#fff;border:1px dashed var(--line);border-radius:7px;margin-left:170px}
-  .tetris-row .glabel{position:absolute;left:-170px;width:160px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:800;color:var(--ink2);padding:0 8px;line-height:1.3}
-  .tetris-row .glabel small{display:block;font-size:11px;font-weight:600;color:#9aa3b2;margin-top:2px}
-  .tetris-row .gtoggle{position:absolute;right:-160px;top:50%;transform:translateY(-50%);font-size:11px;background:#eef0f4;color:var(--ink2);border:none;padding:6px 12px;border-radius:6px;font-weight:700;cursor:pointer;width:80px}
-  .tetris-row .gtoggle.on{background:#dc2626;color:#fff}
-  .tetris{padding-right:180px}  /* 우측 = 토글 버튼 공간 */
-  .bar{position:absolute;top:3px;bottom:3px;border-radius:6px;cursor:grab;
-    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;
-    box-shadow:0 1px 4px rgba(0,0,0,.15);user-select:none;-webkit-user-select:none;
-    text-align:center;padding:0 6px;overflow:hidden;white-space:nowrap;
-    touch-action:none;-webkit-touch-callout:none}
+  /* 체크박스 그리드 (= 등급 활성 토글) */
+  .checks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+  .check{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);
+    border-radius:9px;padding:9px 11px;cursor:pointer;user-select:none;transition:.12s}
+  .check input{margin:0;width:16px;height:16px;accent-color:#dc2626;cursor:pointer}
+  .check .nm{font-size:13px;font-weight:800;color:var(--ink)}
+  .check .lim{font-size:10px;color:var(--ink2);font-weight:600;margin-left:auto}
+  .check.on{border-color:#dc2626;background:#fff5f5}
+  /* 차트 영역 = overflow-x: auto (= 가로 스크롤) + overlay 막대 */
+  .chartbox{position:relative;height:380px;margin-top:10px;overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;touch-action:pan-x;background:#fafbfd;border-radius:10px}
+  .chart-inner{position:relative;height:380px}
+  canvas#chart{display:block;height:380px}
+  .bar-overlay{position:absolute;left:0;top:0;bottom:0;pointer-events:none}
+  .bar-row{position:absolute;left:0;right:0;height:20px;pointer-events:none}
+  .bar{position:absolute;top:2px;bottom:2px;border-radius:5px;cursor:grab;
+    display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;
+    box-shadow:0 1px 3px rgba(0,0,0,.15);user-select:none;-webkit-user-select:none;
+    text-align:center;padding:0 5px;overflow:hidden;white-space:nowrap;
+    touch-action:none;-webkit-touch-callout:none;pointer-events:auto;min-width:30px}
   .bar:active{cursor:grabbing;opacity:.85}
-  .tetris-row{touch-action:pan-y}  /* row 본체 = 세로 스크롤만 허용 */
-  /* 빨강 채도 그라데이션 = 인지지원(아래) 진한 빨강 → 1등급(위) 옅은 회색빛 */
-  .bar.g0{background:hsl(0,95%,50%)}  /* 인지지원 = 채도 95% */
-  .bar.g1{background:hsl(0,80%,55%)}  /* 5등급 = 채도 80% */
-  .bar.g2{background:hsl(0,60%,58%)}  /* 4등급 = 채도 60% */
-  .bar.g3{background:hsl(0,45%,60%)}  /* 3등급 = 채도 45% */
-  .bar.g4{background:hsl(0,32%,62%)}  /* 2등급 = 채도 32% */
-  .bar.g5{background:hsl(0,20%,65%)}  /* 1등급 = 채도 20% (= 거의 회색 = 기억 흐려짐) */
-  .bar .x2{position:absolute;top:-10px;right:-6px;background:#fff;color:#dc2626;border:2px solid #dc2626;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:900;line-height:1.2}
+  .bar.g0{background:hsl(0,95%,50%)}
+  .bar.g1{background:hsl(0,80%,55%)}
+  .bar.g2{background:hsl(0,60%,58%)}
+  .bar.g3{background:hsl(0,45%,60%)}
+  .bar.g4{background:hsl(0,32%,62%)}
+  .bar.g5{background:hsl(0,20%,65%);color:#fff}
+  .bar .x2{position:absolute;top:-8px;right:-3px;background:#fff;color:#dc2626;border:1.5px solid #dc2626;padding:0 5px;border-radius:5px;font-size:9px;font-weight:900;line-height:1.3}
   .topgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px}
   .stat{background:#f7f9fc;border:1px solid var(--line);border-radius:13px;padding:14px 16px}
   .stat .k{font-size:11px;font-weight:800;color:var(--ink2);margin-bottom:7px;letter-spacing:.3px}
@@ -67,8 +67,6 @@
   .punch b{font-size:26px;font-weight:800;color:#dc2626}
   .punch .net{display:block;margin-top:10px;padding-top:10px;border-top:1px dashed #f5b5b5;font-size:17px;font-weight:500}
   .punch .net b{font-size:22px}
-  .chartbox{position:relative;height:360px;margin-top:10px}
-  canvas#chart{width:100%;height:360px}
   .legend{display:flex;gap:24px;margin-top:14px;font-size:14px;font-weight:800;color:var(--ink)}
   .legend i{display:inline-block;width:16px;height:16px;border-radius:3px;margin-right:7px;vertical-align:-3px}
   .meta{display:flex;gap:16px;flex-wrap:wrap;font-size:15px;font-weight:700;margin:8px 0 14px;
@@ -84,28 +82,10 @@
   .toolbar{display:flex;justify-content:flex-end}
   .warn{background:#fff8ec;border:1px solid #f6e2bb;color:#956510;font-size:12px;font-weight:600;padding:11px 14px;border-radius:10px;margin-top:14px;display:flex;gap:7px}
 
-  /* 모바일 세로 모드 = 가로 회전 안내 (= 폰 가로 강제) */
-  .rotate-hint{display:none;position:fixed;inset:0;background:#0b0f1d;color:#fff;
-    z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:24px;
-    font-family:'Apple SD Gothic Neo',sans-serif;padding:30px;text-align:center}
-  .rotate-hint .icon{font-size:80px;animation:rot 2.4s ease-in-out infinite}
-  .rotate-hint .t{font-size:22px;font-weight:800;line-height:1.5}
-  .rotate-hint .s{font-size:15px;color:#aab4cf;font-weight:600;line-height:1.6;max-width:280px}
-  @keyframes rot{0%,15%{transform:rotate(0deg)}50%,65%{transform:rotate(-90deg)}100%{transform:rotate(0deg)}}
-  @media (orientation:portrait) and (max-width:900px) and (pointer:coarse){
-    .wrap{display:none}
-    .rotate-hint{display:flex}
-  }
+  /* 세로 모드 전용 = 가로 회전 안내 제거됨 */
 </style>
 </head>
 <body>
-
-<!-- 폰 세로 모드 = 가로 회전 안내 (= 가로 시 자동 사라짐) -->
-<div class="rotate-hint">
-  <div class="icon">📱</div>
-  <div class="t">화면을 가로로<br>돌려주세요</div>
-  <div class="s">이 시뮬레이터는 가로 모드에서<br>최적화되어 있습니다.<br>폰을 옆으로 회전해 주세요.</div>
-</div>
 
 <div class="wrap">
 
@@ -126,12 +106,8 @@
   </div>
 
   <div class="card">
-    <div class="eyebrow">진행 시나리오 — 우측 [활성화] 버튼으로 등급 추가. 바를 좌우 드래그해서 발생 시점 조정</div>
-    <div class="tetris">
-      <div class="tetris-axis" id="t-axis"></div>
-      <div class="tetris-grid" id="t-grid"></div>
-      <div class="tetris-rows" id="t-rows"></div>
-    </div>
+    <div class="eyebrow">진행 시나리오 — 체크박스로 등급 활성화. 그래프 안 막대를 좌우 드래그해서 발생 시점 조정</div>
+    <div class="checks" id="checks"></div>
   </div>
 
   <div class="card" id="resultcard">
@@ -145,7 +121,12 @@
       <div class="meta-text" id="meta"></div>
       <button class="btn-mini" id="saveBtn">🖼️ 이미지 저장</button>
     </div>
-    <div class="chartbox"><canvas id="chart"></canvas></div>
+    <div class="chartbox" id="chartbox">
+      <div class="chart-inner" id="chart-inner">
+        <canvas id="chart"></canvas>
+        <div class="bar-overlay" id="bar-overlay"></div>
+      </div>
+    </div>
     <div class="legend">
       <span><i style="background:var(--blue)"></i>그 해 받는 생활자금</span>
       <span><i style="background:var(--teal)"></i>누적 수령액</span>
@@ -237,20 +218,23 @@ function setStart(i,val,fast){
 }
 
 function quickUpdate(){
-  // 드래그 중 = 막대 위치만 (= 그래프/숫자 X = 가볍게 = 부드러운 움직임)
-  const rows=document.getElementById('t-rows');
-  if(!rows) return;
-  const TR=termYears();
+  // 드래그 중 = overlay 막대 위치만 직접 변경 (= DOM 보존 = pointer capture 유지)
+  if(!chartGeom) return;
+  const overlay=document.getElementById('bar-overlay');
+  if(!overlay) return;
+  const {cw, N, fs} = chartGeom;
   GRADES.forEach((g,i)=>{
-    const row=rows.children[i];
+    if(!state.active[i]) return;
+    const row = overlay.children[5-i];  // row 0 = 1등급 위
     if(!row) return;
-    const bar=row.querySelector('.bar');
-    if(!state.active[i] || !bar) return;
+    const bar = row.querySelector('.bar');
+    if(!bar) return;
     const start=state.start[i], len=barLen(i);
-    bar.style.left=`${(start-1)/TR*100}%`;
-    bar.style.width=`${len/TR*100}%`;
+    const x1 = (start-fs)/Math.max(1,N-1)*cw;
+    const x2 = (start+len-1-fs)/Math.max(1,N-1)*cw;
+    bar.style.left = Math.max(0,x1)+'px';
+    bar.style.width = Math.max(20, x2-x1)+'px';
   });
-  // compute() = endDrag에서 호출 = 그래프/숫자 갱신
 }
 
 function toggleActive(i){
@@ -273,8 +257,10 @@ let drag=null;
 // Pointer Events = 마우스/터치/펜 통합 = iOS Safari 안정
 function startDrag(e,i){
   e.preventDefault();
-  const rowEl=document.querySelectorAll('.tetris-row')[i];
-  drag={i, startX:e.clientX, origStart:state.start[i], rowW:rowEl.clientWidth, pointerId:e.pointerId};
+  // 그래프 cw 기준 = N년이 cw 픽셀. 1년 = cw/(N-1)
+  const cw = chartGeom ? chartGeom.cw : 300;
+  const N = chartGeom ? Math.max(1, chartGeom.N) : 1;
+  drag={i, startX:e.clientX, origStart:state.start[i], rowW:cw, N, pointerId:e.pointerId};
   // pointer capture = 손가락이 바 밖으로 나가도 이벤트 유지 (= iOS 핵심)
   try{ e.target.setPointerCapture(e.pointerId); }catch(_){}
   document.addEventListener('pointermove',onDrag);
@@ -285,7 +271,7 @@ function onDrag(e){
   if(!drag) return;
   e.preventDefault();
   const dx=e.clientX-drag.startX;
-  const yearPx=drag.rowW/termYears();
+  const yearPx=drag.rowW/Math.max(1, drag.N-1);
   const newStart=Math.round(drag.origStart + dx/yearPx);
   if(newStart!==state.start[drag.i]) setStart(drag.i, newStart, true);
 }
@@ -301,60 +287,57 @@ function endDrag(e){
   if(wasDragging) render();
 }
 
-function buildTetris(){
-  // 축 라벨 (= 1, 5, 10, ..., 40)
-  const axis=document.getElementById('t-axis');
-  axis.innerHTML='';
-  [1,5,10,15,20,25,30,35,40].forEach(yr=>{
-    const s=document.createElement('span');
-    s.style.left=`${(yr-1)/(termYears()-1)*100}%`;
-    s.textContent=yr+'년';
-    axis.appendChild(s);
-  });
-  // 격자 (= termYears()=30년 위치 표시)
-  const grid=document.getElementById('t-grid');
-  grid.innerHTML='';
-  [10,20,30,40].forEach(yr=>{
-    const v=document.createElement('div');v.className='vline';
-    v.style.left=`${(yr-1)/(termYears()-1)*100}%`;
-    grid.appendChild(v);
-  });
-
-  // 등급별 row + 바
-  const rows=document.getElementById('t-rows');
-  rows.innerHTML='';
+function buildChecks(){
+  const box=document.getElementById('checks');
+  box.innerHTML='';
   GRADES.forEach((g,i)=>{
-    const row=document.createElement('div');row.className='tetris-row';
-    const durLabel = DURATION[g]===999 ? '만기까지' : '10년 한시';
-    row.innerHTML=`<div class="glabel">${SHORT[g]}<small>한도 ${limitOf(g,i)}만 · ${durLabel}</small></div>
-      <button class="gtoggle ${state.active[i]?'on':''}" data-i="${i}">${state.active[i]?'활성 ✓':'활성화'}</button>`;
-    rows.appendChild(row);
+    const lim=limitOf(g,i);
+    const durLabel = DURATION[g]===999 ? '만기' : '10년';
+    const div=document.createElement('label');
+    div.className='check'+(state.active[i]?' on':'');
+    div.innerHTML=`<input type="checkbox" data-i="${i}" ${state.active[i]?'checked':''}>
+      <span class="nm">${SHORT[g]}</span><span class="lim">${lim}만·${durLabel}</span>`;
+    box.appendChild(div);
   });
+  box.querySelectorAll('input').forEach(inp=>inp.onchange=()=>toggleActive(+inp.dataset.i));
+}
 
-  // 활성 등급 바 그리기
-  GRADES.forEach((g,i)=>{
-    if(!state.active[i]) return;
-    const rowEl=rows.children[i];
-    const start=state.start[i];
-    const len=barLen(i);
-    const bar=document.createElement('div');
-    bar.className=`bar g${i}`;
-    bar.style.left=`${(start-1)/termYears()*100}%`;
-    bar.style.width=`${len/termYears()*100}%`;
-    // 중첩 = 위 등급 중 = 활성 + 본인 활성 기간과 겹침
+let chartGeom=null;  // 마지막 draw 시점의 그래프 영역 좌표 (= overlay 정렬용)
+
+function buildOverlay(){
+  const overlay=document.getElementById('bar-overlay');
+  if(!overlay) return;
+  overlay.innerHTML='';
+  if(!chartGeom) return;
+  const {pL, pT, ch, cw, N, fs} = chartGeom;
+  const rowH = 22;
+  overlay.style.left = pL+'px';
+  overlay.style.top = pT+'px';
+  overlay.style.width = cw+'px';
+  overlay.style.height = (rowH*6)+'px';
+  for(let row=0; row<6; row++){
+    const i = 5-row;  // row 0 = 1등급 위, row 5 = 인지지원 아래
+    const r=document.createElement('div');r.className='bar-row';r.style.top=(row*rowH)+'px';
+    overlay.appendChild(r);
+    if(!state.active[i]) continue;
+    const g=GRADES[i];
+    const start=state.start[i], len=barLen(i);
+    const x1 = (start - fs) / Math.max(1, N-1) * cw;
+    const x2 = (start + len - 1 - fs) / Math.max(1, N-1) * cw;
     const upperFired = i<5 && GRADES.slice(i+1).some((ug,j)=>{
       const ki=i+1+j;
       if(!state.active[ki]) return false;
-      return state.start[ki] < start+len;  // 위 등급 시작 = 본인 끝나기 전이면 겹침
+      return state.start[ki] < start+len;
     });
     const amt = (g!=='1등급' && upperFired) ? limitOf(g,i)*2 : limitOf(g,i);
-    bar.innerHTML=`${amt}만/년${upperFired&&g!=='1등급'?'<span class="x2">×2</span>':''}`;
+    const bar=document.createElement('div');
+    bar.className=`bar g${i}`;
+    bar.style.left = Math.max(0,x1)+'px';
+    bar.style.width = Math.max(20, x2-x1)+'px';
+    bar.innerHTML = `${amt}만${upperFired&&g!=='1등급'?'<span class="x2">×2</span>':''}`;
     bar.addEventListener('pointerdown',e=>startDrag(e,i));
-    rowEl.appendChild(bar);
-  });
-
-  // 토글 이벤트
-  rows.querySelectorAll('.gtoggle').forEach(b=>b.onclick=()=>toggleActive(+b.dataset.i));
+    r.appendChild(bar);
+  }
 }
 function yearly(){
   // 테트리스 모델 = 활성 바 = 각자 시작점/길이로 그림 위에 배치
@@ -402,8 +385,24 @@ function firstActiveStart(){
 }
 function draw(targetCanvas){
   const cv=targetCanvas||document.getElementById('chart'),dpr=window.devicePixelRatio||1;
-  const W=cv.clientWidth,H=360;cv.width=W*dpr;cv.height=H*dpr;const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
-  const pL=62,pR=88,pT=22,pB=36,cw=W-pL-pR,ch=H-pT-pB;
+  // 차트 안쪽 = 큰 너비 (= 가로 스크롤). 년차당 px = 화면 크기에 따라 자동
+  const TR=termYears(), fs=firstActiveStart();
+  const N=Math.max(1, TR-fs+1);
+  // 폰 세로 = clientWidth 작음. N=51 → 1년 = 30~40px → 1500~2000px 전체
+  const yearPx = Math.max(34, (window.innerWidth||360)/15);  // 화면 = 15년 정도 보임
+  const innerW = Math.max(window.innerWidth-20, N*yearPx + 150);
+  // chart-inner 너비 강제 (= 캡처 wrapper에는 무관 = 그 때 직접 설정)
+  if(!targetCanvas){
+    const inner=document.getElementById('chart-inner');
+    if(inner){ inner.style.width = innerW+'px'; }
+    cv.style.width = innerW+'px';
+  }
+  const W=cv.clientWidth, H=380;
+  cv.width=W*dpr; cv.height=H*dpr;
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  // 상단 = 막대 overlay 영역 (= 6 row × 22 = 132px). 그래프 본체 = 그 아래.
+  const overlayH = 22*6 + 6;
+  const pL=62,pR=70,pT=overlayH,pB=36,cw=W-pL-pR,ch=H-pT-pB;
   const ysAll=chartData.y, csAll=chartData.c;
   // 능동 자르기 = 첫 활성 시작 시점 ~ 100세까지만 표시
   const TR=termYears(), fs=firstActiveStart();
@@ -462,8 +461,10 @@ function draw(targetCanvas){
     ctx.fillRect(bx,by,tw,24);
     ctx.fillStyle='#fff';ctx.fillText(txt,bx+tw-9,by+17);
   }
+  // overlay 정렬용 좌표 저장
+  if(!targetCanvas) chartGeom = {pL, pT, ch, cw, N, fs};
 }
-function render(){buildTetris();compute();}
+function render(){buildChecks();compute();buildOverlay();}
 document.getElementById('saveBtn').onclick=()=>{
   // 캡처용 wrapper = 940px 고정 (= 모바일에서도 가로 와이드 저장)
   const w=document.createElement('div');
