@@ -459,19 +459,20 @@ function draw(targetCanvas){
     ctx.fillText(a+'세',x,H-10);
   });
   const xAt=i=>pL+cw*i/Math.max(1,N-1);
-  // 막대 = 그 시점 활성 등급 수에 따라 파랑 채도 변화 (= 20%→100%)
+  // 막대 = 그 시점 활성 등급 수에 따라 = 색상 자체 변화 (= 한눈에 차별)
+  // 1개 = 옅은 파랑 / 6개 = 진한 빨강 = 무지개 그라데이션
+  const COLORS=['#cfe2ff','#7dd3fc','#3b82f6','#1e40af','#9333ea','#dc2626'];
   const bw=cw/N*0.65;
   ys.forEach((v,i)=>{
     if(v<=0) return;
-    const y=i+fs;  // y년차
+    const y=i+fs;
     let cnt=0;
     GRADES.forEach((g,gi)=>{
       if(!state.active[gi]) return;
       if(y<state.start[gi] || y>=state.start[gi]+barLen(gi)) return;
       cnt++;
     });
-    const sat = Math.max(20, Math.min(100, 20 + cnt*16));  // 1개=36%, 2개=52%, ..., 6개=116→100
-    ctx.fillStyle = `hsl(220,${sat}%,${65-cnt*6}%)`;
+    ctx.fillStyle = COLORS[Math.min(5, Math.max(0, cnt-1))] || '#e5e7eb';
     const h=ch*v/maxY;
     ctx.fillRect(xAt(i)-bw/2,pT+ch-h,bw,h);
   });
