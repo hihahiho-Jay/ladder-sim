@@ -80,9 +80,30 @@
   .btn{display:inline-flex;align-items:center;gap:7px;background:var(--ink);color:#fff;border:none;padding:13px 22px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer}
   .toolbar{display:flex;justify-content:flex-end}
   .warn{background:#fff8ec;border:1px solid #f6e2bb;color:#956510;font-size:12px;font-weight:600;padding:11px 14px;border-radius:10px;margin-top:14px;display:flex;gap:7px}
+
+  /* 모바일 세로 모드 = 가로 회전 안내 (= 폰 가로 강제) */
+  .rotate-hint{display:none;position:fixed;inset:0;background:#0b0f1d;color:#fff;
+    z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:24px;
+    font-family:'Apple SD Gothic Neo',sans-serif;padding:30px;text-align:center}
+  .rotate-hint .icon{font-size:80px;animation:rot 2.4s ease-in-out infinite}
+  .rotate-hint .t{font-size:22px;font-weight:800;line-height:1.5}
+  .rotate-hint .s{font-size:15px;color:#aab4cf;font-weight:600;line-height:1.6;max-width:280px}
+  @keyframes rot{0%,15%{transform:rotate(0deg)}50%,65%{transform:rotate(-90deg)}100%{transform:rotate(0deg)}}
+  @media (orientation:portrait) and (max-width:900px){
+    .wrap{display:none}
+    .rotate-hint{display:flex}
+  }
 </style>
 </head>
 <body>
+
+<!-- 폰 세로 모드 = 가로 회전 안내 (= 가로 시 자동 사라짐) -->
+<div class="rotate-hint">
+  <div class="icon">📱</div>
+  <div class="t">화면을 가로로<br>돌려주세요</div>
+  <div class="s">이 시뮬레이터는 가로 모드에서<br>최적화되어 있습니다.<br>폰을 옆으로 회전해 주세요.</div>
+</div>
+
 <div class="wrap">
 
   <div class="card" id="header">
