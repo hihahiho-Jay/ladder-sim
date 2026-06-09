@@ -426,12 +426,13 @@ function draw(targetCanvas){
   const W=cv.clientWidth, H=300;
   cv.width=W*dpr; cv.height=H*dpr;
   const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
-  // 등급 막대 = 그래프 본체 안 (= 매년 받는 막대 위에 overlay)
-  // pT 키움 = 시작 나이 라벨 공간 확보
+  // 영역 분리 = 위 = 등급 막대 / 아래 = 매년 받는 막대그래프
   const overlayH = 18*6 + 4;
-  const pL=44, pR=44, pT=14, pB=28;
+  const pL=44, pR=44;
+  const barTop = 14;                       // 등급 막대 시작 (= 위쪽 영역)
+  const pT = barTop + overlayH + 8;        // 매년 그래프 시작 y
+  const pB = 28;
   const cw=W-pL-pR, ch=H-pT-pB;
-  const barTop = pT + 2;
   const ysAll=chartData.y, csAll=chartData.c;
   // 능동 자르기 = 첫 활성 시작 시점 ~ 100세까지만 표시 (TR, fs 위에서 정의됨)
   const ys=ysAll.slice(fs-1), cs=csAll.slice(fs-1);
