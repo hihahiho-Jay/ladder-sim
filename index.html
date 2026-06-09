@@ -473,26 +473,14 @@ function draw(targetCanvas){
     const h=ch*v/maxY;
     ctx.fillRect(xAt(i)-bw/2,pT+ch-h,bw,h);
   });
-  // 누적 라인 = 빨강 + 굵게
-  ctx.strokeStyle='#dc2626';ctx.lineWidth=4;ctx.beginPath();
+  // 누적 라인 = 노랑 + 굵게
+  ctx.strokeStyle='#f59e0b';ctx.lineWidth=4;ctx.beginPath();
   cs.forEach((v,i)=>{const x=xAt(i),y=pT+ch-ch*v/maxC;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
-  // 끝점 dot
-  const lx=xAt(N-1),ly=pT+ch-ch*cs[N-1]/maxC;ctx.fillStyle='#dc2626';ctx.beginPath();ctx.arc(lx,ly,7,0,7);ctx.fill();
-  // 우측 누적 숫자
-  ctx.textAlign='left';ctx.fillStyle='#dc2626';ctx.font='bold 14px sans-serif';
-  for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.fillText(Math.round(maxC*(4-i)/4).toLocaleString(),W-pR+8,y+5);}
-  // 100세 시점 누적 = 끝점 옆 큰 라벨
-  const finalCum=cs[N-1];
-  if(finalCum>0){
-    ctx.font='bold 18px sans-serif';ctx.textAlign='right';ctx.fillStyle='#fff';
-    const txt=finalCum.toLocaleString()+'만';
-    const tw=ctx.measureText(txt).width+18;
-    ctx.fillStyle='#dc2626';
-    // 박스 = 끝점 위 26px. 단 그래프 위쪽 padding(pT) 안으로 제한 = 짤림 방지
-    const bx=lx-tw-10, by=Math.max(pT, ly-26);
-    ctx.fillRect(bx,by,tw,24);
-    ctx.fillStyle='#fff';ctx.fillText(txt,bx+tw-9,by+17);
-  }
+  // 끝점 dot = 노랑
+  const lx=xAt(N-1),ly=pT+ch-ch*cs[N-1]/maxC;ctx.fillStyle='#f59e0b';ctx.beginPath();ctx.arc(lx,ly,6,0,7);ctx.fill();
+  // 우측 누적 숫자 = 노랑
+  ctx.textAlign='left';ctx.fillStyle='#d97706';ctx.font='bold 11px sans-serif';
+  for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.fillText(Math.round(maxC*(4-i)/4).toLocaleString(),W-pR+4,y+4);}
   // overlay 정렬용 좌표 저장
   if(!targetCanvas) chartGeom = {pL, pT:barTop, ch, cw, N, fs};
 }
