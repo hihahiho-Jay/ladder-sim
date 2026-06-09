@@ -3,389 +3,451 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex,nofollow">
-<title>브레인케어건강보험 · 누적 시뮬레이터</title>
+<title>브레인케어 생활자금 시뮬레이터</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
-    --navy:#1c2c4c; --navy2:#15233f; --gold:#bd9526; --gold-l:#f6efdd;
-    --ink:#2a3344; --muted:#8a93a3; --line:#e6e9ef; --bg:#f4f6f9;
-    --green:#3f7d3a; --green-l:#eaf3e6; --red:#b1453b; --red-l:#fbece9;
+    --ink:#16203a; --ink2:#5a6580; --line:#e4e8f0; --paper:#fff;
+    --bg:#eceff5; --blue:#2f54d6; --teal:#0fb5a0; --amber:#f0a020; --rose:#e8526e;
   }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);}
-  .page{max-width:1040px;margin:0 auto;background:#fff;min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.06);}
-
-  /* header */
-  header{background:var(--navy);color:#fff;padding:18px 30px;display:flex;align-items:center;justify-content:space-between;}
-  header .ttl{font-size:19px;font-weight:700;letter-spacing:-.3px;}
-  header .ttl span{color:#cdb86a;font-weight:500;font-size:14px;margin-left:8px;}
-  header .right{display:flex;align-items:center;gap:10px;}
-  .pill{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid #41507a;color:#b9c4dd;}
-  .pill.warn{background:#3a2c10;border-color:#6b521f;color:#e7c869;}
-  .logo{font-size:12px;color:#9aa6c2;}
-
-  .body{padding:26px 30px 50px;}
-
-  /* control bar */
-  .controls{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;padding:16px 18px;background:var(--bg);border:1px solid var(--line);border-radius:12px;margin-bottom:24px;}
-  .ctl-label{font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.3px;}
-  .seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff;}
-  .seg button{border:none;background:#fff;padding:8px 16px;font-size:13px;font-family:inherit;cursor:pointer;color:var(--ink);}
-  .seg button.on{background:var(--navy);color:#fff;font-weight:600;}
-  .ctl .val{font-size:20px;font-weight:700;color:var(--navy);}
-  .ctl .val small{font-size:12px;color:var(--muted);font-weight:500;}
-  .inline-sel{font-size:18px;font-weight:700;color:var(--navy);border:1px solid var(--line);border-radius:7px;padding:4px 8px;font-family:inherit;margin-right:3px;background:#fff;cursor:pointer;}
-  .rung .gyears select{font-size:14px;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:4px 6px;font-family:inherit;background:#fff;cursor:pointer;}
-  .ghost-note{font-size:11px;color:var(--gold);margin-left:auto;align-self:center;}
-
-  /* main grid */
-  .grid{display:grid;grid-template-columns:1fr 290px;gap:22px;align-items:start;}
-  @media(max-width:780px){.grid{grid-template-columns:1fr;}}
-
-  .sec-h{font-size:13px;color:var(--muted);margin-bottom:10px;font-weight:600;letter-spacing:.3px;}
-
-  /* ladder */
-  .ladder{display:flex;flex-direction:column;gap:7px;}
-  .rung{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:13px 17px;cursor:pointer;transition:all .16s;}
-  .rung:hover{border-color:var(--navy);transform:translateX(3px);}
-  .rung .gname{font-size:15px;font-weight:600;}
-  .rung .gtag{font-size:11px;color:var(--muted);margin-top:3px;}
-  .rung .gamt{font-size:17px;font-weight:700;color:#aeb6c4;}
-  .rung .gright{text-align:right;}
-  .rung .gyears{font-size:12px;color:var(--muted);white-space:nowrap;}
-  .rung .gyears input{width:44px;padding:4px 5px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:13px;text-align:center;color:var(--ink);}
-  .rung.passed{background:var(--green-l);border-color:#aacb9f;}
-  .rung.passed .gamt{color:var(--green);} .rung.passed .gtag{color:var(--green);}
-  .rung.current{background:var(--gold-l);border-color:var(--gold);box-shadow:0 0 0 3px #bd95262e;}
-  .rung.current .gamt{color:#9a7a1c;} .rung.current .gtag{color:#9a7a1c;font-weight:600;}
-  .rung.skipped{background:var(--red-l);border-color:#e3b3ad;opacity:.85;}
-  .rung.skipped .gname{text-decoration:line-through;color:var(--red);}
-  .rung.skipped .gamt{color:var(--red);} .rung.skipped .gtag{color:var(--red);}
-  .x2{font-size:10px;background:var(--green);color:#fff;padding:2px 6px;border-radius:5px;margin-left:7px;vertical-align:middle;}
-
-  /* panel */
-  .panel{background:var(--navy);color:#fff;border-radius:14px;padding:20px;position:sticky;top:16px;}
-  .p-lab{font-size:11px;color:#aab4cf;letter-spacing:.5px;}
-  .p-big{font-size:40px;font-weight:800;color:#e7c869;line-height:1.05;margin:4px 0 2px;}
-  .p-big small{font-size:15px;color:#cdd5e6;font-weight:600;}
-  .p-year{font-size:13px;color:#aab4cf;margin-bottom:14px;}
-  .p-year b{color:#fff;}
-  .loss{background:#3a1a16;border:1px solid #7a3b34;border-radius:10px;padding:11px 13px;margin:12px 0;font-size:12.5px;color:#f2c4bd;display:none;}
-  .loss.show{display:block;}
-  .loss b{color:#ff9d92;font-size:15px;}
-  .btns{display:flex;flex-direction:column;gap:7px;margin-top:10px;}
-  button.act{font-family:inherit;font-size:13px;padding:10px;border-radius:9px;border:1px solid #41507a;background:#23335a;color:#dfe5f2;cursor:pointer;transition:.15s;}
-  button.act:hover{background:#2c3e69;}
-  button.act.primary{background:var(--gold);color:#241a04;border-color:var(--gold);font-weight:700;}
-  button.act.primary:hover{background:#d4ab38;}
-  button.act.reset{background:transparent;color:#aab4cf;}
-
-  /* graph */
-  .graph-box{margin-top:30px;padding:22px;border:1px solid var(--line);border-radius:14px;}
-  .graph-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
-  .graph-head .gh-l .t{font-size:15px;font-weight:700;}
-  .graph-head .gh-l .s{font-size:12px;color:var(--muted);margin-top:3px;}
-  .total25{text-align:right;}
-  .total25 .lab{font-size:11px;color:var(--muted);}
-  .total25 .num{font-size:26px;font-weight:800;color:var(--gold);}
-  .ledger{min-width:220px;}
-  .led-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--muted);padding:3px 0;}
-  .led-row b{font-size:16px;font-weight:700;}
-  .led-row b.pos{color:var(--gold);} .led-row b.neg{color:#9aa3b2;}
-  .led-row.net{border-top:1.5px solid var(--line);margin-top:5px;padding-top:7px;color:var(--ink);font-weight:600;}
-  .led-row.net b{font-size:24px;font-weight:800;}
-  .led-row.net b.plus{color:var(--green);} .led-row.net b.minus{color:var(--red);}
-  .roi{text-align:right;font-size:12px;color:var(--gold);font-weight:700;margin-top:4px;}
-  .chart{display:flex;align-items:flex-end;gap:14px;height:200px;border-bottom:2px solid var(--line);padding-bottom:0;}
-  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
-  .bar-val{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;}
-  .bar{width:70%;background:#dde2ea;border-radius:6px 6px 0 0;transition:height .4s,background .2s;min-height:2px;}
-  .bar-col.reached .bar{background:var(--gold);}
-  .bar-col.reached .bar-val{color:#9a7a1c;}
-  .bar-col.here .bar{background:var(--navy);}
-  .bar-col.here .bar-val{color:var(--navy);}
-  .bar-col.ghost .bar{background:#eef0f4;}
-  .bar-col.ghost .bar-val{color:#c2c8d2;}
-  .bar-col.skip .bar{background:var(--red);}
-  .bar-col.skip .bar-val{color:var(--red);font-size:11px;}
-  .bar-x{font-size:12px;color:var(--ink);margin-top:8px;text-align:center;}
-  .scenario{margin-top:16px;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 15px;line-height:1.8;}
-  .scenario b{color:var(--navy);}
-  .scenario .seg-arrow{color:var(--gold);margin:0 6px;font-weight:700;}
-  .scenario .empty{color:var(--muted);}
-
-  /* grade settings */
-  details.cfg{margin-top:24px;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
-  details.cfg summary{padding:13px 18px;cursor:pointer;font-size:13px;font-weight:600;color:var(--navy);background:var(--bg);list-style:none;}
-  details.cfg summary::-webkit-details-marker{display:none;}
-  details.cfg summary::before{content:"⚙ ";}
-  .cfg-grid{padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-  @media(max-width:600px){.cfg-grid{grid-template-columns:repeat(2,1fr);}}
-  .cfg-item{font-size:12px;color:var(--muted);}
-  .cfg-item input{width:100%;margin-top:5px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;text-align:right;color:var(--ink);}
-  .cfg-note{padding:0 18px 16px;font-size:11.5px;color:var(--gold);}
-
-  .foot{margin-top:26px;font-size:11.5px;color:#9aa3b2;line-height:1.7;border-top:1px solid var(--line);padding-top:16px;}
-  .foot b{color:var(--muted);}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.5;padding:18px}
+  .wrap{max-width:940px;margin:0 auto}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:18px;
+    padding:24px 26px;margin-bottom:16px;box-shadow:0 2px 14px rgba(22,32,58,.05)}
+  .eyebrow{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:1.5px;margin-bottom:7px}
+  h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
+  h1 .s{display:block;font-size:13px;font-weight:500;color:var(--ink2);margin-top:6px}
+  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:13px;margin-top:4px}
+  label.l{display:block;font-size:11px;font-weight:800;color:var(--ink2);margin-bottom:6px;letter-spacing:.3px}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{flex:1;border:none;background:var(--paper);padding:9px 4px;font-size:13px;font-weight:700;color:var(--ink2);cursor:pointer}
+  .seg button.on{background:var(--blue);color:#fff}
+  select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-weight:700;color:var(--ink);background:var(--paper)}
+  /* 테트리스 = 가로 시간 축 + 등급별 바 드래그 */
+  .tetris{background:#fafbfd;border:2px solid var(--line);border-radius:12px;padding:14px 18px 18px;margin-top:8px;position:relative;overflow:hidden}
+  .tetris-axis{position:relative;height:18px;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:6px;margin-left:170px;margin-right:8px}
+  .tetris-axis span{position:absolute;transform:translateX(-50%)}
+  .tetris-grid{position:absolute;left:170px;right:18px;top:42px;bottom:18px;pointer-events:none;z-index:0}
+  .tetris-grid .vline{position:absolute;top:0;bottom:0;width:1px;background:#e6eaf2}
+  .tetris-rows{display:flex;flex-direction:column-reverse;gap:7px;position:relative;z-index:1}
+  .tetris-row{position:relative;height:44px;background:#fff;border:1px dashed var(--line);border-radius:7px;margin-left:170px}
+  .tetris-row .glabel{position:absolute;left:-170px;width:160px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:800;color:var(--ink2);padding:0 8px;line-height:1.3}
+  .tetris-row .glabel small{display:block;font-size:11px;font-weight:600;color:#9aa3b2;margin-top:2px}
+  .tetris-row .gtoggle{position:absolute;right:-160px;top:50%;transform:translateY(-50%);font-size:11px;background:#eef0f4;color:var(--ink2);border:none;padding:6px 12px;border-radius:6px;font-weight:700;cursor:pointer;width:80px}
+  .tetris-row .gtoggle.on{background:#dc2626;color:#fff}
+  .tetris{padding-right:180px}  /* 우측 = 토글 버튼 공간 */
+  .bar{position:absolute;top:3px;bottom:3px;border-radius:6px;cursor:grab;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;
+    box-shadow:0 1px 4px rgba(0,0,0,.15);user-select:none;text-align:center;padding:0 6px;overflow:hidden;white-space:nowrap}
+  .bar:active{cursor:grabbing;opacity:.85}
+  /* 빨강 채도 그라데이션 = 인지지원(아래) 진한 빨강 → 1등급(위) 옅은 회색빛 */
+  .bar.g0{background:hsl(0,95%,50%)}  /* 인지지원 = 채도 95% */
+  .bar.g1{background:hsl(0,80%,55%)}  /* 5등급 = 채도 80% */
+  .bar.g2{background:hsl(0,60%,58%)}  /* 4등급 = 채도 60% */
+  .bar.g3{background:hsl(0,45%,60%)}  /* 3등급 = 채도 45% */
+  .bar.g4{background:hsl(0,32%,62%)}  /* 2등급 = 채도 32% */
+  .bar.g5{background:hsl(0,20%,65%)}  /* 1등급 = 채도 20% (= 거의 회색 = 기억 흐려짐) */
+  .bar .x2{position:absolute;top:-10px;right:-6px;background:#fff;color:#dc2626;border:2px solid #dc2626;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:900;line-height:1.2}
+  .topgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px}
+  .stat{background:#f7f9fc;border:1px solid var(--line);border-radius:13px;padding:14px 16px}
+  .stat .k{font-size:11px;font-weight:800;color:var(--ink2);margin-bottom:7px;letter-spacing:.3px}
+  .stat .v{font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1}
+  .stat .v small{font-size:16px;font-weight:700;color:var(--ink2);margin-left:2px}
+  .stat.pay .v{color:var(--ink)}
+  .stat.peak .v{color:var(--blue)}
+  .stat.total{background:#fff1f1;border-color:#f5c2c2}
+  .stat.total .v{color:#dc2626;font-size:42px}
+  .stat.total .k{color:#dc2626}
+  .punch{background:#fff;border:4px solid #dc2626;color:#dc2626;border-radius:14px;padding:22px 24px;margin-bottom:18px;font-weight:500;font-size:19px;line-height:1.6}
+  .punch b{font-size:26px;font-weight:800;color:#dc2626}
+  .punch .net{display:block;margin-top:10px;padding-top:10px;border-top:1px dashed #f5b5b5;font-size:17px;font-weight:500}
+  .punch .net b{font-size:22px}
+  .chartbox{position:relative;height:360px;margin-top:10px}
+  canvas#chart{width:100%;height:360px}
+  .legend{display:flex;gap:24px;margin-top:14px;font-size:14px;font-weight:800;color:var(--ink)}
+  .legend i{display:inline-block;width:16px;height:16px;border-radius:3px;margin-right:7px;vertical-align:-3px}
+  .meta{display:flex;gap:16px;flex-wrap:wrap;font-size:15px;font-weight:700;margin:8px 0 14px;
+    background:#f4f6fb;padding:8px 10px 8px 16px;border-radius:10px;
+    align-items:center;justify-content:space-between}
+  .meta-text{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .meta b{color:var(--ink);font-weight:900;font-size:16px}
+  .meta span{color:var(--ink2)}
+  .btn-mini{background:var(--ink);color:#fff;border:none;padding:7px 14px;border-radius:7px;
+    font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+  .btn-mini:hover{opacity:.88}
+  .btn{display:inline-flex;align-items:center;gap:7px;background:var(--ink);color:#fff;border:none;padding:13px 22px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer}
+  .toolbar{display:flex;justify-content:flex-end}
+  .warn{background:#fff8ec;border:1px solid #f6e2bb;color:#956510;font-size:12px;font-weight:600;padding:11px 14px;border-radius:10px;margin-top:14px;display:flex;gap:7px}
 </style>
 </head>
 <body>
-<div class="page">
-  <header>
-    <div class="ttl">브레인케어건강보험 <span>· 누적 시뮬레이터</span></div>
-    <div class="right">
-      <span class="pill warn">가상 숫자 · 골격 버전</span>
-      <span class="logo">라이나생명</span>
-    </div>
-  </header>
+<div class="wrap">
 
-  <div class="body">
-
-    <!-- 컨트롤 바 -->
-    <div class="controls">
-      <div class="ctl">
-        <div class="ctl-label">가입금액</div>
-        <div class="seg" id="segAmt">
-          <button data-amt="100" class="on">100만</button>
-          <button data-amt="200">200만</button>
-        </div>
-      </div>
-      <div class="ctl">
-        <div class="ctl-label">월 납입료 (가상)</div>
-        <div class="val" id="premium">22,030<small> 원</small></div>
-      </div>
-      <div class="ctl">
-        <div class="ctl-label">납입기간 (가상)</div>
-        <div class="val"><select id="payYears" class="inline-sel">
-          <option>5</option><option>10</option><option>15</option><option>20</option>
-          <option selected>30</option><option>40</option>
-        </select>년</div>
-      </div>
-      <div class="ctl">
-        <div class="ctl-label">총 수령 기간 (각 등급 체류 합산)</div>
-        <div class="val"><span id="totalYears">0</span><small> 년</small></div>
-      </div>
-      <div class="ghost-note">※ 모든 숫자는 예시 — 본사 자료 나오면 ⚙에서 교체</div>
-    </div>
-
-    <!-- 메인 -->
-    <div class="grid">
-      <div>
-        <div class="sec-h">고객 상태가 나빠지는 순서대로 등급을 클릭하세요 (위 → 아래)</div>
-        <div class="ladder" id="ladder"></div>
-      </div>
-
-      <div class="panel">
-        <div class="p-lab">매달 통장에 꽂히는 돈</div>
-        <div class="p-big" id="total">0<small> 만원/월</small></div>
-        <div class="p-year">1년이면 <b id="year">0</b> 만원</div>
-        <div class="loss" id="loss"></div>
-        <div class="btns">
-          <button class="act primary" onclick="demoLadder()">▶ 차근차근 진행</button>
-          <button class="act" onclick="demoJump()">⚡ 점프 (인지→3등급)</button>
-          <button class="act reset" onclick="resetSim()">↺ 초기화</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 그래프 -->
-    <div class="graph-box">
-      <div class="graph-head">
-        <div class="gh-l">
-          <div class="t">매달 받는 돈 — 내가 밟은 경로</div>
-          <div class="s">골드=지나옴 · 네이비=현재 · 회색=갈 수 있는 길 · 빨강=건너뜀(미지급)</div>
-        </div>
-        <div class="ledger">
-          <div class="led-row"><span>받은 돈 (누적 수령)</span><b class="pos" id="cum">0</b></div>
-          <div class="led-row"><span>낸 보험료 (<span id="paidYears">30</span>년 납)</span><b class="neg" id="paid">0</b></div>
-          <div class="led-row net"><span>순이익</span><b id="net">0</b></div>
-          <div class="roi" id="roi"></div>
-        </div>
-      </div>
-      <div class="chart" id="chart"></div>
-      <div class="scenario" id="scenario"></div>
-    </div>
-
-    <!-- 등급별 금액 설정 -->
-    <details class="cfg">
-      <summary>등급별 기본 월지급액 설정 (가상 — 여기서 수정)</summary>
-      <div class="cfg-grid" id="cfgGrid"></div>
-      <div class="cfg-note">※ 가입금액 100만 기준 예시값입니다. 본사 확정 표가 나오면 이 칸만 바꾸면 전체가 다시 계산됩니다.</div>
-    </details>
-
-    <div class="foot">
-      <b>핵심 규칙</b> ① 등급 받으면 매달 자동 지급 (신청·증빙 불요) &nbsp;②&nbsp; 떠나온 등급 = 2배로 누적 잠김 &nbsp;③&nbsp; 건너뛴(점프) 등급 = 미지급, 영영 사라짐.<br>
-      <b>주의</b> 이 도구의 모든 금액은 개념 설명용 가상값입니다. 실제 보장·납입료·가입조건은 본사 확정 자료를 따릅니다.
-    </div>
-
+  <div class="card" id="header">
+    <div class="eyebrow">치매 · 장기요양 생활자금</div>
+    <h1>브레인케어 생활자금 시뮬레이터
+      <span class="s">매달 내는 보험료 한 잔 값으로 — 상태가 나빠질수록 매년 늘어나는 생활자금</span></h1>
   </div>
+
+  <div class="card">
+    <div class="eyebrow">가입 조건</div>
+    <div class="controls">
+      <div><label class="l">가입 나이</label><select id="age"></select></div>
+      <div><label class="l">성별</label><div class="seg" id="gender"><button data-v="남" class="on">남</button><button data-v="여">여</button></div></div>
+      <div><label class="l">종류</label><div class="seg" id="sigang"><button data-v="장기요양" class="on">장기요양</button><button data-v="뇌혈관">뇌혈관</button></div></div>
+      <div><label class="l">플랜</label><div class="seg" id="plan"><button data-v="뉴노멀I" class="on">뉴노멀 I</button><button data-v="뉴노멀II">뉴노멀 II</button></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">진행 시나리오 — 우측 [활성화] 버튼으로 등급 추가. 바를 좌우 드래그해서 발생 시점 조정</div>
+    <div class="tetris">
+      <div class="tetris-axis" id="t-axis"></div>
+      <div class="tetris-grid" id="t-grid"></div>
+      <div class="tetris-rows" id="t-rows"></div>
+    </div>
+  </div>
+
+  <div class="card" id="resultcard">
+    <div class="punch" id="punch"></div>
+    <div class="topgrid">
+      <div class="stat pay"><div class="k">매달 내는 보험료</div><div class="v" id="premV">0<small>원</small></div></div>
+      <div class="stat peak"><div class="k">최대 연 수령액</div><div class="v" id="peakV">0<small>만원</small></div></div>
+      <div class="stat total"><div class="k">100세까지 누적 수령</div><div class="v" id="totV">0<small>만원</small></div></div>
+    </div>
+    <div class="meta">
+      <div class="meta-text" id="meta"></div>
+      <button class="btn-mini" id="saveBtn">🖼️ 이미지 저장</button>
+    </div>
+    <div class="chartbox"><canvas id="chart"></canvas></div>
+    <div class="legend">
+      <span><i style="background:var(--blue)"></i>그 해 받는 생활자금</span>
+      <span><i style="background:var(--teal)"></i>누적 수령액</span>
+    </div>
+    <div class="warn">⚠️ <div>교육·상담 참고용입니다. 보험료의 중간 나이는 회사 공식 요율표를 곡선 보간하여 산출하며(표상 나이는 정확히 일치), 실제 금액·보장은 약관 및 설계 시 확인하시기 바랍니다. 90일 면책기간이 적용됩니다.</div></div>
+  </div>
+
 </div>
 
 <script>
-  // ── 데이터 모델 (전부 가상) ───────────────────────────────
-  const GRADES = [
-    { key:"cog", name:"인지지원등급", tag:"가장 경증 · 출발점", base:10 },
-    { key:"g5",  name:"5등급",       tag:"",                  base:10 },
-    { key:"g4",  name:"4등급",       tag:"",                  base:10 },
-    { key:"g3",  name:"3등급",       tag:"",                  base:10 },
-    { key:"g2",  name:"2등급",       tag:"",                  base:10 },
-    { key:"g1",  name:"1등급",       tag:"가장 중증 · PEAK",  base:10 },
-  ];
-  let amtFactor = 1;      // 가입금액 배수 (100만=1, 200만=2)
-  let payYears = 30;      // 납입기간 (가상)
-  const PREMIUM_BASE = 22030;  // 월 납입료 가상 기준 (100만 기준, 원)
+const PREM={"장기요양|뉴노멀I|남|1등급": {"45": 570.0, "46": 584.9, "47": 601.5, "48": 619.7, "49": 639.3, "50": 660.0, "51": 682.5, "52": 707.3, "53": 733.8, "54": 761.5, "55": 790.0, "56": 819.0, "57": 848.9, "58": 880.3, "59": 913.8, "60": 950.0, "61": 989.6, "62": 1032.7, "63": 1079.0, "64": 1128.2, "65": 1180.0}, "장기요양|뉴노멀I|남|2등급": {"45": 1210.0, "46": 1248.6, "47": 1290.1, "48": 1334.3, "49": 1381.0, "50": 1430.0, "51": 1481.4, "52": 1535.8, "53": 1593.5, "54": 1654.8, "55": 1720.0, "56": 1789.5, "57": 1863.8, "58": 1943.3, "59": 2028.6, "60": 2120.0, "61": 2219.5, "62": 2328.0, "63": 2444.8, "64": 2569.1, "65": 2700.0}, "장기요양|뉴노멀I|남|3등급": {"45": 3320.0, "46": 3434.0, "47": 3555.5, "48": 3684.0, "49": 3819.0, "50": 3960.0, "51": 4105.9, "52": 4258.0, "53": 4419.1, "54": 4592.2, "55": 4780.0, "56": 4985.1, "57": 5208.6, "58": 5451.6, "59": 5715.1, "60": 6000.0, "61": 6314.2, "62": 6662.7, "63": 7042.1, "64": 7449.0, "65": 7880.0}, "장기요양|뉴노멀I|남|4등급": {"45": 6250.0, "46": 6478.2, "47": 6733.1, "48": 7011.8, "49": 7311.7, "50": 7630.0, "51": 7969.7, "52": 8337.3, "53": 8734.9, "54": 9165.0, "55": 9630.0, "56": 10134.3, "57": 10685.0, "58": 11288.6, "59": 11951.5, "60": 12680.0, "61": 13503.0, "62": 14436.9, "63": 15469.2, "64": 16587.7, "65": 17780.0}, "장기요양|뉴노멀I|남|5등급": {"45": 3720.0, "46": 3858.0, "47": 4012.7, "48": 4182.5, "49": 4365.5, "50": 4560.0, "51": 4768.0, "52": 4993.7, "53": 5238.3, "54": 5503.3, "55": 5790.0, "56": 6102.7, "57": 6446.1, "58": 6822.1, "59": 7232.8, "60": 7680.0, "61": 8178.8, "62": 8738.7, "63": 9353.1, "64": 10015.7, "65": 10720.0}, "장기요양|뉴노멀I|남|인지지원등급": {"45": 1300.0, "46": 1350.7, "47": 1406.6, "48": 1467.0, "49": 1531.7, "50": 1600.0, "51": 1672.0, "52": 1748.7, "53": 1831.4, "54": 1921.4, "55": 2020.0, "56": 2129.6, "57": 2251.7, "58": 2385.9, "59": 2532.1, "60": 2690.0, "61": 2864.2, "62": 3058.4, "63": 3270.4, "64": 3498.3, "65": 3740.0}, "장기요양|뉴노멀I|여|1등급": {"45": 1170.0, "46": 1207.6, "47": 1246.5, "48": 1286.6, "49": 1327.7, "50": 1370.0, "51": 1412.6, "52": 1455.7, "53": 1500.5, "54": 1548.2, "55": 1600.0, "56": 1656.8, "57": 1718.6, "58": 1785.0, "59": 1855.6, "60": 1930.0, "61": 2009.2, "62": 2094.3, "63": 2184.7, "64": 2280.1, "65": 2380.0}, "장기요양|뉴노멀I|여|2등급": {"45": 2470.0, "46": 2547.9, "47": 2631.2, "48": 2719.6, "49": 2812.7, "50": 2910.0, "51": 3011.8, "52": 3118.9, "53": 3232.2, "54": 3352.3, "55": 3480.0, "56": 3615.8, "57": 3760.5, "58": 3915.3, "59": 4081.4, "60": 4260.0, "61": 4454.9, "62": 4667.9, "63": 4897.6, "64": 5142.1, "65": 5400.0}, "장기요양|뉴노멀I|여|3등급": {"45": 6330.0, "46": 6540.4, "47": 6766.9, "48": 7008.1, "49": 7262.9, "50": 7530.0, "51": 7809.2, "52": 8103.4, "53": 8416.0, "54": 8750.4, "55": 9110.0, "56": 9497.0, "57": 9914.2, "58": 10365.9, "59": 10856.4, "60": 11390.0, "61": 11982.6, "62": 12642.7, "63": 13363.5, "64": 14138.2, "65": 14960.0}, "장기요양|뉴노멀I|여|4등급": {"45": 11280.0, "46": 11671.1, "47": 12107.2, "48": 12583.8, "49": 13096.2, "50": 13640.0, "51": 14218.8, "52": 14843.3, "53": 15519.4, "54": 16253.0, "55": 17050.0, "56": 17919.6, "57": 18874.6, "58": 19925.8, "59": 21084.0, "60": 22360.0, "61": 23808.5, "62": 25461.1, "63": 27294.4, "64": 29285.2, "65": 31410.0}, "장기요양|뉴노멀I|여|5등급": {"45": 7140.0, "46": 7389.4, "47": 7669.3, "48": 7976.5, "49": 8307.8, "50": 8660.0, "51": 9036.5, "52": 9444.9, "53": 9888.1, "54": 10368.8, "55": 10890.0, "56": 11459.3, "57": 12085.3, "58": 12772.8, "59": 13526.1, "60": 14350.0, "61": 15274.8, "62": 16319.3, "63": 17470.3, "64": 18714.9, "65": 20040.0}, "장기요양|뉴노멀I|여|인지지원등급": {"45": 2580.0, "46": 2670.0, "47": 2771.2, "48": 2882.4, "49": 3002.4, "50": 3130.0, "51": 3266.5, "52": 3414.8, "53": 3575.8, "54": 3750.5, "55": 3940.0, "56": 4147.0, "57": 4374.9, "58": 4625.2, "59": 4899.6, "60": 5200.0, "61": 5537.5, "62": 5919.1, "63": 6339.9, "64": 6795.2, "65": 7280.0}, "장기요양|뉴노멀II|남|1등급": {"45": 640.0, "46": 657.7, "47": 676.6, "48": 696.7, "49": 717.9, "50": 740.0, "51": 763.0, "52": 787.2, "53": 812.9, "54": 840.3, "55": 870.0, "56": 902.4, "57": 937.7, "58": 975.8, "59": 1016.6, "60": 1060.0, "61": 1106.7, "62": 1157.4, "63": 1211.7, "64": 1269.4, "65": 1330.0}, "장기요양|뉴노멀II|남|2등급": {"45": 1350.0, "46": 1391.8, "47": 1436.9, "48": 1485.2, "49": 1536.3, "50": 1590.0, "51": 1646.3, "52": 1705.9, "53": 1769.3, "54": 1837.2, "55": 1910.0, "56": 1988.6, "57": 2073.6, "58": 2165.3, "59": 2264.0, "60": 2370.0, "61": 2485.7, "62": 2612.5, "63": 2749.6, "64": 2895.7, "65": 3050.0}, "장기요양|뉴노멀II|남|3등급": {"45": 3690.0, "46": 3816.1, "47": 3951.9, "48": 4096.7, "49": 4249.6, "50": 4410.0, "51": 4577.4, "52": 4753.7, "53": 4941.2, "54": 5142.5, "55": 5360.0, "56": 5595.5, "57": 5851.0, "58": 6128.6, "59": 6430.8, "60": 6760.0, "61": 7126.5, "62": 7536.2, "63": 7984.7, "64": 8467.4, "65": 8980.0}, "장기요양|뉴노멀II|남|4등급": {"45": 6840.0, "46": 7096.6, "47": 7384.1, "48": 7699.3, "49": 8039.0, "50": 8400.0, "51": 8785.7, "52": 9203.6, "53": 9656.8, "54": 10147.9, "55": 10680.0, "56": 11258.5, "57": 11892.1, "58": 12588.5, "59": 13355.2, "60": 14200.0, "61": 15158.4, "62": 16250.9, "63": 17462.2, "64": 18777.0, "65": 20180.0}, "장기요양|뉴노멀II|남|5등급": {"45": 4120.0, "46": 4277.4, "47": 4454.1, "48": 4648.2, "49": 4857.5, "50": 5080.0, "51": 5317.7, "52": 5575.2, "53": 5855.0, "54": 6159.2, "55": 6490.0, "56": 6853.7, "57": 7256.1, "58": 7698.6, "59": 8182.8, "60": 8710.0, "61": 9298.7, "62": 9960.8, "63": 10688.7, "64": 11474.4, "65": 12310.0}, "장기요양|뉴노멀II|남|인지지원등급": {"45": 1460.0, "46": 1515.7, "47": 1578.3, "48": 1647.0, "49": 1721.2, "50": 1800.0, "51": 1884.3, "52": 1975.8, "53": 2075.1, "54": 2183.0, "55": 2300.0, "56": 2428.2, "57": 2569.5, "58": 2724.8, "59": 2894.7, "60": 3080.0, "61": 3287.3, "62": 3520.8, "63": 3777.6, "64": 4054.9, "65": 4350.0}, "장기요양|뉴노멀II|여|1등급": {"45": 1270.0, "46": 1308.1, "47": 1348.3, "48": 1390.4, "49": 1434.3, "50": 1480.0, "51": 1527.2, "52": 1576.3, "53": 1627.8, "54": 1682.2, "55": 1740.0, "56": 1801.2, "57": 1866.0, "58": 1935.2, "59": 2009.6, "60": 2090.0, "61": 2178.3, "62": 2275.2, "63": 2380.0, "64": 2491.9, "65": 2610.0}, "장기요양|뉴노멀II|여|2등급": {"45": 2720.0, "46": 2808.3, "47": 2902.9, "48": 3003.4, "49": 3109.3, "50": 3220.0, "51": 3335.9, "52": 3458.1, "53": 3587.3, "54": 3724.3, "55": 3870.0, "56": 4024.5, "57": 4188.8, "58": 4364.8, "59": 4554.6, "60": 4760.0, "61": 4986.2, "62": 5235.5, "63": 5505.6, "64": 5794.5, "65": 6100.0}, "장기요양|뉴노멀II|여|3등급": {"45": 7150.0, "46": 7394.2, "47": 7657.9, "48": 7939.5, "49": 8237.4, "50": 8550.0, "51": 8877.0, "52": 9222.0, "53": 9589.6, "54": 9984.1, "55": 10410.0, "56": 10870.8, "57": 11370.2, "58": 11913.2, "59": 12504.8, "60": 13150.0, "61": 13869.7, "62": 14675.5, "63": 15558.5, "64": 16509.6, "65": 17520.0}, "장기요양|뉴노멀II|여|4등급": {"45": 12380.0, "46": 12818.8, "47": 13313.2, "48": 13857.2, "49": 14444.8, "50": 15070.0, "51": 15738.8, "52": 16465.2, "53": 17255.2, "54": 18114.8, "55": 19050.0, "56": 20071.9, "57": 21197.3, "58": 22440.7, "59": 23816.7, "60": 25340.0, "61": 27082.9, "62": 29087.3, "63": 31322.4, "64": 33756.9, "65": 36360.0}, "장기요양|뉴노멀II|여|5등급": {"45": 7950.0, "46": 8237.9, "47": 8562.9, "48": 8920.9, "49": 9308.0, "50": 9720.0, "51": 10161.1, "52": 10640.8, "53": 11162.9, "54": 11731.3, "55": 12350.0, "56": 13029.2, "57": 13780.3, "58": 14608.8, "59": 15520.2, "60": 16520.0, "61": 17648.6, "62": 18931.3, "63": 20350.6, "64": 21889.3, "65": 23530.0}, "장기요양|뉴노멀II|여|인지지원등급": {"45": 2960.0, "46": 3066.7, "47": 3187.6, "48": 3321.2, "49": 3465.8, "50": 3620.0, "51": 3785.6, "52": 3966.2, "53": 4163.1, "54": 4377.3, "55": 4610.0, "56": 4864.4, "57": 5145.0, "58": 5454.4, "59": 5795.1, "60": 6170.0, "61": 6594.7, "62": 7078.9, "63": 7615.7, "64": 8198.3, "65": 8820.0}, "뇌혈관|뉴노멀I|남|1등급": {"45": 460.0, "46": 471.7, "47": 484.7, "48": 498.8, "49": 513.9, "50": 530.0, "51": 547.5, "52": 566.6, "53": 587.0, "54": 608.3, "55": 630.0, "56": 651.8, "57": 674.1, "58": 697.5, "59": 722.6, "60": 750.0, "61": 780.4, "62": 813.9, "63": 850.2, "64": 889.0, "65": 930.0}, "뇌혈관|뉴노멀I|남|2등급": {"45": 940.0, "46": 968.1, "47": 998.3, "48": 1030.5, "49": 1064.4, "50": 1100.0, "51": 1137.4, "52": 1177.0, "53": 1219.0, "54": 1263.3, "55": 1310.0, "56": 1359.3, "57": 1411.5, "58": 1467.0, "59": 1526.4, "60": 1590.0, "61": 1659.0, "62": 1734.1, "63": 1814.6, "64": 1900.1, "65": 1990.0}, "뇌혈관|뉴노멀I|남|3등급": {"45": 2570.0, "46": 2658.2, "47": 2750.5, "48": 2846.7, "49": 2946.6, "50": 3050.0, "51": 3155.6, "52": 3263.9, "53": 3377.5, "54": 3498.7, "55": 3630.0, "56": 3773.1, "57": 3928.3, "58": 4096.0, "59": 4276.4, "60": 4470.0, "61": 4681.1, "62": 4912.5, "63": 5162.3, "64": 5428.8, "65": 5710.0}, "뇌혈관|뉴노멀I|남|4등급": {"45": 4630.0, "46": 4796.3, "47": 4980.2, "48": 5179.9, "49": 5393.7, "50": 5620.0, "51": 5861.0, "52": 6120.7, "53": 6399.9, "54": 6699.4, "55": 7020.0, "56": 7363.7, "57": 7734.7, "58": 8136.8, "59": 8573.9, "60": 9050.0, "61": 9579.6, "62": 10170.8, "63": 10817.0, "64": 11512.2, "65": 12250.0}, "뇌혈관|뉴노멀I|남|5등급": {"45": 2560.0, "46": 2653.5, "47": 2757.2, "48": 2870.2, "49": 2991.5, "50": 3120.0, "51": 3256.9, "52": 3404.6, "53": 3563.9, "54": 3735.4, "55": 3920.0, "56": 4119.9, "57": 4337.6, "58": 4574.4, "59": 4831.5, "60": 5110.0, "61": 5418.0, "62": 5760.5, "63": 6133.9, "64": 6534.9, "65": 6960.0}, "뇌혈관|뉴노멀I|남|인지지원등급": {"45": 860.0, "46": 891.8, "47": 927.1, "48": 965.4, "49": 1006.5, "50": 1050.0, "51": 1096.4, "52": 1146.5, "53": 1200.4, "54": 1258.2, "55": 1320.0, "56": 1386.2, "57": 1457.6, "58": 1534.8, "59": 1618.7, "60": 1710.0, "61": 1811.3, "62": 1924.1, "63": 2047.3, "64": 2179.6, "65": 2320.0}, "뇌혈관|뉴노멀I|여|1등급": {"45": 890.0, "46": 914.9, "47": 941.4, "48": 969.6, "49": 999.1, "50": 1030.0, "51": 1062.3, "52": 1096.3, "53": 1132.1, "54": 1170.0, "55": 1210.0, "56": 1252.4, "57": 1297.4, "58": 1345.3, "59": 1396.1, "60": 1450.0, "61": 1507.9, "62": 1570.2, "63": 1636.5, "64": 1706.6, "65": 1780.0}, "뇌혈관|뉴노멀I|여|2등급": {"45": 1810.0, "46": 1866.2, "47": 1926.6, "48": 1991.0, "49": 2058.9, "50": 2130.0, "51": 2205.1, "52": 2284.8, "53": 2369.0, "54": 2457.5, "55": 2550.0, "56": 2646.2, "57": 2746.9, "58": 2853.4, "59": 2967.3, "60": 3090.0, "61": 3224.0, "62": 3370.1, "63": 3527.1, "64": 3694.1, "65": 3870.0}, "뇌혈관|뉴노멀I|여|3등급": {"45": 4460.0, "46": 4608.8, "47": 4766.8, "48": 4933.5, "49": 5108.0, "50": 5290.0, "51": 5478.8, "52": 5675.8, "53": 5883.5, "54": 6104.1, "55": 6340.0, "56": 6592.3, "57": 6862.2, "58": 7152.0, "59": 7463.8, "60": 7800.0, "61": 8168.3, "62": 8572.8, "63": 9010.1, "64": 9477.0, "65": 9970.0}, "뇌혈관|뉴노멀I|여|4등급": {"45": 7950.0, "46": 8218.5, "47": 8514.3, "48": 8834.9, "49": 9177.7, "50": 9540.0, "51": 9924.2, "52": 10336.2, "53": 10779.1, "54": 11256.0, "55": 11770.0, "56": 12325.9, "57": 12930.0, "58": 13588.3, "59": 14306.4, "60": 15090.0, "61": 15965.3, "62": 16947.2, "63": 18024.4, "64": 19185.7, "65": 20420.0}, "뇌혈관|뉴노멀I|여|5등급": {"45": 4750.0, "46": 4913.8, "47": 5094.3, "48": 5289.9, "49": 5499.0, "50": 5720.0, "51": 5954.2, "52": 6205.1, "53": 6475.0, "54": 6765.9, "55": 7080.0, "56": 7420.7, "57": 7791.9, "58": 8196.8, "59": 8638.5, "60": 9120.0, "61": 9657.4, "62": 10259.9, "63": 10920.7, "64": 11633.0, "65": 12390.0}, "뇌혈관|뉴노멀I|여|인지지원등급": {"45": 1580.0, "46": 1634.0, "47": 1693.5, "48": 1758.0, "49": 1827.0, "50": 1900.0, "51": 1977.3, "52": 2060.3, "53": 2149.5, "54": 2245.8, "55": 2350.0, "56": 2463.1, "57": 2586.7, "58": 2721.6, "59": 2869.0, "60": 3030.0, "61": 3210.1, "62": 3412.5, "63": 3634.8, "64": 3874.8, "65": 4130.0}, "뇌혈관|뉴노멀II|남|1등급": {"45": 510.0, "46": 523.7, "47": 538.6, "48": 554.7, "49": 571.9, "50": 590.0, "51": 609.4, "52": 630.2, "53": 652.4, "54": 675.8, "55": 700.0, "56": 725.0, "57": 750.9, "58": 778.4, "59": 807.9, "60": 840.0, "61": 875.5, "62": 914.6, "63": 956.9, "64": 1002.2, "65": 1050.0}, "뇌혈관|뉴노멀II|남|2등급": {"45": 1050.0, "46": 1082.1, "47": 1116.3, "48": 1152.4, "49": 1190.4, "50": 1230.0, "51": 1271.1, "52": 1314.0, "53": 1359.4, "54": 1407.8, "55": 1460.0, "56": 1516.6, "57": 1578.0, "58": 1644.0, "59": 1714.7, "60": 1790.0, "61": 1871.2, "62": 1959.4, "63": 2054.0, "64": 2154.4, "65": 2260.0}, "뇌혈관|뉴노멀II|남|3등급": {"45": 2870.0, "46": 2967.8, "47": 3071.1, "48": 3179.4, "49": 3292.5, "50": 3410.0, "51": 3530.9, "52": 3655.9, "53": 3787.4, "54": 3928.0, "55": 4080.0, "56": 4245.0, "57": 4423.7, "58": 4616.8, "59": 4825.3, "60": 5050.0, "61": 5296.5, "62": 5568.1, "63": 5862.5, "64": 6177.2, "65": 6510.0}, "뇌혈관|뉴노멀II|남|4등급": {"45": 5110.0, "46": 5297.0, "47": 5504.5, "48": 5730.5, "49": 5973.0, "50": 6230.0, "51": 6504.1, "52": 6800.2, "53": 7119.1, "54": 7462.1, "55": 7830.0, "56": 8225.4, "57": 8653.4, "58": 9118.6, "59": 9625.9, "60": 10180.0, "61": 10799.3, "62": 11493.9, "63": 12255.8, "64": 13077.1, "65": 13950.0}, "뇌혈관|뉴노멀II|남|5등급": {"45": 2860.0, "46": 2966.4, "47": 3084.8, "48": 3214.0, "49": 3352.8, "50": 3500.0, "51": 3656.9, "52": 3826.3, "53": 4009.2, "54": 4206.8, "55": 4420.0, "56": 4651.8, "57": 4905.2, "58": 5181.7, "59": 5482.8, "60": 5810.0, "61": 6173.5, "62": 6579.6, "63": 7024.0, "64": 7502.3, "65": 8010.0}, "뇌혈관|뉴노멀II|남|인지지원등급": {"45": 970.0, "46": 1007.8, "47": 1049.0, "48": 1093.3, "49": 1140.4, "50": 1190.0, "51": 1242.1, "52": 1297.3, "53": 1356.5, "54": 1420.4, "55": 1490.0, "56": 1566.3, "57": 1650.0, "58": 1741.7, "59": 1841.5, "60": 1950.0, "61": 2070.5, "62": 2205.2, "63": 2352.7, "64": 2511.4, "65": 2680.0}, "뇌혈관|뉴노멀II|여|1등급": {"45": 970.0, "46": 999.6, "47": 1030.5, "48": 1062.6, "49": 1095.8, "50": 1130.0, "51": 1164.9, "52": 1200.5, "53": 1237.7, "54": 1277.2, "55": 1320.0, "56": 1366.5, "57": 1416.9, "58": 1470.9, "59": 1528.6, "60": 1590.0, "61": 1656.0, "62": 1727.5, "63": 1803.9, "64": 1884.9, "65": 1970.0}, "뇌혈관|뉴노멀II|여|2등급": {"45": 2000.0, "46": 2063.4, "47": 2131.5, "48": 2203.8, "49": 2280.1, "50": 2360.0, "51": 2444.0, "52": 2532.8, "53": 2626.7, "54": 2725.7, "55": 2830.0, "56": 2939.2, "57": 3054.1, "58": 3176.4, "59": 3307.8, "60": 3450.0, "61": 3606.3, "62": 3777.8, "63": 3963.2, "64": 4161.1, "65": 4370.0}, "뇌혈관|뉴노멀II|여|3등급": {"45": 5070.0, "46": 5237.4, "47": 5417.0, "48": 5608.0, "49": 5809.3, "50": 6020.0, "51": 6240.1, "52": 6471.7, "53": 6717.3, "54": 6979.2, "55": 7260.0, "56": 7561.6, "57": 7886.0, "58": 8235.6, "59": 8612.8, "60": 9020.0, "61": 9467.3, "62": 9960.3, "63": 10494.6, "64": 11065.9, "65": 11670.0}, "뇌혈관|뉴노멀II|여|4등급": {"45": 8800.0, "46": 9107.3, "47": 9447.1, "48": 9816.2, "49": 10211.6, "50": 10630.0, "51": 11073.8, "52": 11550.2, "53": 12063.7, "54": 12618.8, "55": 13220.0, "56": 13874.2, "57": 14589.7, "58": 15373.2, "59": 16231.1, "60": 17170.0, "61": 18224.3, "62": 19414.2, "63": 20724.9, "64": 22141.8, "65": 23650.0}, "뇌혈관|뉴노멀II|여|5등급": {"45": 5340.0, "46": 5526.2, "47": 5733.4, "48": 5959.5, "49": 6202.4, "50": 6460.0, "51": 6734.4, "52": 7030.4, "53": 7350.3, "54": 7696.1, "55": 8070.0, "56": 8475.9, "57": 8919.4, "58": 9404.9, "59": 9936.9, "60": 10520.0, "61": 11175.9, "62": 11917.2, "63": 12734.5, "64": 13618.6, "65": 14560.0}, "뇌혈관|뉴노멀II|여|인지지원등급": {"45": 1820.0, "46": 1882.9, "47": 1953.1, "48": 2029.8, "49": 2112.4, "50": 2200.0, "51": 2293.5, "52": 2394.5, "53": 2503.8, "54": 2622.1, "55": 2750.0, "56": 2888.9, "57": 3040.9, "58": 3207.3, "59": 3389.9, "60": 3590.0, "61": 3815.3, "62": 4070.2, "63": 4351.5, "64": 4655.8, "65": 4980.0}};      // 월보험료(원), 키: 종류|플랜|성별|등급 -> {나이:원}
+const LIMITS={"뉴노멀I": {"1등급": {"64이하": 100, "65이상": 50}, "2등급": {"64이하": 100, "65이상": 50}, "3등급": {"64이하": 50, "65이상": 30}, "4등급": {"64이하": 30, "65이상": 20}, "5등급": {"64이하": 20, "65이상": 10}, "인지지원등급": {"64이하": 10, "65이상": 10}}, "뉴노멀II": {"1등급": {"64이하": 100, "65이상": 50}, "2등급": {"64이하": 100, "65이상": 50}, "3등급": {"64이하": 30, "65이상": 30}, "4등급": {"64이하": 20, "65이상": 20}, "5등급": {"64이하": 20, "65이상": 10}, "인지지원등급": {"64이하": 10, "65이상": 10}}};     // 가입한도(만원), 플랜 -> 등급 -> {64이하,65이상}
+const GRADES=['인지지원등급','5등급','4등급','3등급','2등급','1등급'];
+const SHORT={'인지지원등급':'인지지원등급','5등급':'5등급','4등급':'4등급','3등급':'3등급','2등급':'2등급','1등급':'1등급'};
+const DURATION={'인지지원등급':10,'5등급':10,'4등급':10,'3등급':999,'2등급':999,'1등급':999};
+// termYears() = 동적 = 가입 나이 → 100세까지의 년수 (= 100 - age + 1)
+function termYears(){return Math.max(1, 100 - state.age + 1);}
 
-  // status: none | passed | current | skipped
-  let status = GRADES.map(()=> "none");
-  let yearsAt = GRADES.map(()=> 3);   // 각 등급 체류 연수 (기본 3년, 수정 가능)
-  let current = -1;
+// active[i] = 등급 활성 여부 / start[i] = 발생 년차 (1부터)
+// GRADES 순 = 인지지원/5/4/3/2/1 (= 인덱스 0~5)
+const state={age:50,gender:'남',sigang:'장기요양',plan:'뉴노멀I',
+  active:[true,false,false,false,false,false],
+  start: [1,7,17,27,30,35]};
 
-  function setYears(i, v){ yearsAt[i] = Math.max(0, parseInt(v)||0); render(); }
-  function yearOpts(sel){ let o=""; for(let y=1;y<=15;y++) o+=`<option value="${y}"${y===sel?" selected":""}>${y}</option>`; return o; }
+const ageSel=document.getElementById('age');
+for(let a=45;a<=75;a++){
+  const o=document.createElement('option');o.value=a;
+  o.textContent = a + '세' + (a>65?' (추정)':'');
+  ageSel.appendChild(o);
+}
+ageSel.value=state.age; ageSel.onchange=e=>{state.age=+e.target.value;render();};
+// 보험료 PREM은 45~65만 있음 → 66~75 = 65세 값 × 1.07^(나이-65) 외삽
+function premAt(key, age){
+  const tbl = PREM[key]; if(!tbl) return null;
+  if(tbl[age]!=null) return tbl[age];
+  if(age>65 && tbl[65]!=null) return Math.round(tbl[65] * Math.pow(1.07, age-65));
+  return null;
+}
+function seg(id,key){const b=document.getElementById(id);b.querySelectorAll('button').forEach(x=>x.onclick=()=>{b.querySelectorAll('button').forEach(y=>y.classList.remove('on'));x.classList.add('on');state[key]=x.dataset.v;render();});}
+seg('gender','gender');seg('sigang','sigang');seg('plan','plan');
 
-  const baseOf = i => Math.round(GRADES[i].base * amtFactor);
+// 한도 = 가입 시점 나이 기준 (= 50세 가입 → 평생 64이하, 65세+ 가입 → 평생 65이상)
+function limitOf(g){
+  const band = state.age>=65 ? '65이상' : '64이하';
+  return LIMITS[state.plan][g][band];
+}
+// (gradeAmt는 yearly() 안으로 통합 = 이벤트 기반 ×2 트리거 = 위 등급 발생 여부)
+function premium(){
+  // 모든 등급 보험료 합 (= 기초자료 등급별). 66~75세 = 외삽 추정치
+  let sum=0;
+  GRADES.forEach(g=>{
+    const k=`${state.sigang}|${state.plan}|${state.gender}|${g}`;
+    const v=premAt(k, state.age);
+    if(v) sum+=v;
+  });
+  return Math.round(sum);
+}
 
-  // ── 상태 진행 ─────────────────────────────────────────────
-  function advanceTo(target){
-    if (target <= current) return;
-    if (current >= 0) status[current] = "passed";
-    for (let i=current+1; i<target; i++) if (status[i]==="none") status[i]="skipped";
-    status[target] = "current";
-    current = target;
-    render();
+// === 테트리스 패턴 = 가로 시간 축 + 등급별 바 드래그 ===
+function barLen(i){
+  // 인지/5/4 = 10년 고정, 3/2/1 = 시작점~termYears() 끝까지 (만기)
+  const g=GRADES[i];
+  return DURATION[g]===999 ? (termYears()-state.start[i]+1) : DURATION[g];
+}
+function constraintMin(i){
+  // 좌측 한도 = 직전 활성 등급(인덱스 < i) 중 가장 인덱스 큰 거의 start+1. 없으면 1.
+  for(let k=i-1;k>=0;k--){
+    if(state.active[k]) return state.start[k]+1;
   }
-  const amountOf = i => status[i]==="passed" ? baseOf(i)*2 : status[i]==="current" ? baseOf(i) : 0;
-
-  // 차근차근(이상) 진행 시 grade k 까지 갔을 때 매달 금액
-  function idealAt(k){
-    let s=0; for(let i=0;i<k;i++) s+=baseOf(i)*2; s+=baseOf(k); return s;
-  }
-
-  // ── 렌더 ─────────────────────────────────────────────────
-  function render(){
-    // 사다리
-    const lad = document.getElementById("ladder"); lad.innerHTML="";
-    GRADES.forEach((g,i)=>{
-      const amt=amountOf(i), st=status[i];
-      const x2 = st==="passed" ? '<span class="x2">×2</span>' : '';
-      const tag = st==="skipped" ? "건너뜀 · 미지급" : st==="current" ? "지금 이 등급 (1배)" :
-                  st==="passed" ? "지나옴 (2배 누적)" : (g.tag||"미도달");
-      const visited = (st==="passed"||st==="current");
-      const yearsField = visited
-        ? `<div class="gyears">체류 <select onchange="setYears(${i},this.value)" onclick="event.stopPropagation()">${yearOpts(yearsAt[i])}</select> 년</div>`
-        : "";
-      const d=document.createElement("div");
-      d.className="rung "+st; d.onclick=()=>advanceTo(i);
-      d.innerHTML=`<div><div class="gname">${g.name}${x2}</div><div class="gtag">${tag}</div></div>
-                   ${yearsField}
-                   <div class="gright"><div class="gamt">${amt>0? amt+" 만원":"—"}</div></div>`;
-      lad.appendChild(d);
-    });
-
-    // 패널 숫자
-    const total = GRADES.reduce((s,_,i)=>s+amountOf(i),0);
-    document.getElementById("total").innerHTML = total+'<small> 만원/월</small>';
-    document.getElementById("year").textContent = (total*12).toLocaleString();
-
-    // 손해 박스
-    const lossBox=document.getElementById("loss");
-    const skips = status.map((s,i)=>s==="skipped"?i:-1).filter(i=>i>=0);
-    if(skips.length){
-      const lost = skips.reduce((s,i)=>s+baseOf(i)*2,0);
-      lossBox.className="loss show";
-      lossBox.innerHTML=`건너뛴 ${skips.length}개 등급 때문에<br><b>매달 ${lost}만원</b>이 사라졌습니다. (차근차근 왔으면 ${total+lost}만원)`;
-    } else { lossBox.className="loss"; lossBox.innerHTML=""; }
-
-    renderChart();
-  }
-
-  function renderChart(){
-    const chart=document.getElementById("chart"); chart.innerHTML="";
-    const ideal=GRADES.map((_,k)=>idealAt(k));
-    const max=Math.max(...ideal,1);
-    GRADES.forEach((g,k)=>{
-      let type, v;
-      if(status[k]==="skipped"){ type="skip"; v=0; }
-      else if(status[k]==="passed"||status[k]==="current"){
-        // 그 등급에 도달한 순간의 실제 매달 총액 (지나온 등급은 2배 + 현재 1배)
-        v=baseOf(k);
-        for(let j=0;j<k;j++) if(status[j]==="passed") v+=baseOf(j)*2;
-        type = status[k]==="current" ? "here" : "reached";
-      } else { type="ghost"; v=ideal[k]; }   // 아직 안 밟음 = 갈 수 있는 길
-      const h = type==="skip" ? 14 : Math.max(3, Math.round(v/max*180));
-      const valTxt = type==="skip" ? "건너뜀" : v;
-      const col=document.createElement("div");
-      col.className="bar-col "+type;
-      col.innerHTML=`<div class="bar-val">${valTxt}</div><div class="bar" style="height:${h}px"></div>
-                     <div class="bar-x">${g.name.replace("등급","").replace("인지지원","인지")}</div>`;
-      chart.appendChild(col);
-    });
-    // 누적 총액 = 등급별 체류기간을 따라 구간별로 합산 (현실 시나리오)
-    let cum=0, leftBehind=0, totalYears=0;
-    const segs=[];
-    for(let k=0;k<GRADES.length;k++){
-      if(status[k]==="passed"||status[k]==="current"){
-        const monthly = leftBehind + baseOf(k);   // 이 등급에 머무는 동안 매달 받는 돈
-        const y = yearsAt[k]||0;
-        cum += monthly*12*y;
-        totalYears += y;
-        segs.push({name:GRADES[k].name, monthly, y});
-        leftBehind += baseOf(k)*2;                 // 이 등급을 떠나면 2배로 잠김
-      }
-    }
-    document.getElementById("totalYears").textContent=totalYears;
-
-    // 정산: 받은 돈 − 낸 보험료 = 순이익
-    const premiumWon = PREMIUM_BASE*amtFactor;
-    const totalPaid = Math.round(premiumWon*12*payYears/10000); // 원→만원
-    const net = cum - totalPaid;
-    const roi = totalPaid>0 ? cum/totalPaid : 0;
-    document.getElementById("cum").textContent = "+"+cum.toLocaleString()+" 만원";
-    document.getElementById("paid").textContent = "−"+totalPaid.toLocaleString()+" 만원";
-    document.getElementById("paidYears").textContent = payYears;
-    const netEl=document.getElementById("net");
-    netEl.textContent = (net>=0?"+":"−")+Math.abs(net).toLocaleString()+" 만원";
-    netEl.className = net>=0 ? "plus" : "minus";
-    document.getElementById("roi").textContent = cum>0 ? `낸 돈의 ${roi.toFixed(1)}배 수령` : "";
-
-    // 시나리오 요약 줄
-    const sc=document.getElementById("scenario");
-    if(segs.length){
-      sc.innerHTML = "<b>시나리오:</b> " + segs.map(s=>
-        `${s.name} <b>${s.y}년</b>(매달 ${s.monthly}만)`).join('<span class="seg-arrow">→</span>')
-        + `<br>총 <b>${totalYears}년</b> 동안 누적 <b>${cum.toLocaleString()}만원</b> 수령`;
-    } else {
-      sc.innerHTML = `<span class="empty">등급을 클릭하고, 각 등급에서 몇 년 머무는지 넣어보세요. 구간별로 실제 누적 수령액이 계산됩니다.</span>`;
+  return 1;
+}
+function constraintMax(i){
+  // 우측 한도 = termYears() - 바길이 + 1 (= 인지/5/4). 3/2/1은 = 시작점이 어디든 termYears() 끝까지 그어지므로 = termYears().
+  const g=GRADES[i];
+  if(DURATION[g]===999) return termYears();
+  return termYears() - DURATION[g] + 1;
+}
+function setStart(i,val){
+  state.start[i]=Math.max(constraintMin(i), Math.min(constraintMax(i), val));
+  // 연쇄 cascade = 위 등급(인덱스 > i) = 항상 직전 활성 등급 + 1 유지
+  // i+1부터 순서대로 = constraintMin 재계산 → 밀려야 함
+  for(let k=i+1;k<GRADES.length;k++){
+    if(!state.active[k]) continue;
+    const minK = constraintMin(k);  // 직전 활성 등급 start + 1 자동 계산
+    if(state.start[k] < minK){
+      state.start[k] = Math.min(constraintMax(k), minK);
     }
   }
-
-  // ── 컨트롤 ────────────────────────────────────────────────
-  function resetSim(){ status=GRADES.map(()=>"none"); current=-1; render(); }
-  function demoLadder(){ resetSim(); let i=0; const t=setInterval(()=>{advanceTo(i);i++;if(i>=GRADES.length)clearInterval(t);},520); }
-  function demoJump(){ resetSim(); advanceTo(0); setTimeout(()=>advanceTo(3),650); }
-
-  document.getElementById("segAmt").addEventListener("click",e=>{
-    if(e.target.tagName!=="BUTTON")return;
-    [...e.currentTarget.children].forEach(b=>b.classList.remove("on"));
-    e.target.classList.add("on");
-    amtFactor = +e.target.dataset.amt/100;
-    document.getElementById("premium").innerHTML = (PREMIUM_BASE*amtFactor).toLocaleString()+'<small> 원</small>';
-    render();
-  });
-  document.getElementById("payYears").addEventListener("change",e=>{
-    payYears = Math.max(1, parseInt(e.target.value)||1); render();
-  });
-  // 등급별 금액 설정 칸
-  const cfg=document.getElementById("cfgGrid");
-  GRADES.forEach((g,i)=>{
-    const item=document.createElement("label");
-    item.className="cfg-item";
-    item.innerHTML=`${g.name} (만원)<input type="number" value="${g.base}" min="0">`;
-    item.querySelector("input").addEventListener("input",e=>{ GRADES[i].base=+e.target.value||0; render(); });
-    cfg.appendChild(item);
-  });
-
   render();
+}
+
+function toggleActive(i){
+  state.active[i]=!state.active[i];
+  if(state.active[i]){
+    // 활성화 시 = 좌측 한도부터 시작
+    state.start[i]=constraintMin(i);
+    state.start[i]=Math.min(constraintMax(i), state.start[i]);
+  }
+  // 위 등급 = 좌측 한도 재검증
+  if(!state.active[i]){
+    for(let k=i+1;k<GRADES.length;k++){
+      if(state.active[k]) state.start[k]=Math.max(constraintMin(k), state.start[k]);
+    }
+  }
+  render();
+}
+
+let drag=null;
+function startDrag(e,i){
+  e.preventDefault();
+  const rowEl=document.querySelectorAll('.tetris-row')[i];
+  drag={i, startX:(e.touches?e.touches[0].clientX:e.clientX), origStart:state.start[i], rowW:rowEl.clientWidth};
+  document.addEventListener('mousemove',onDrag);
+  document.addEventListener('mouseup',endDrag);
+  document.addEventListener('touchmove',onDrag,{passive:false});
+  document.addEventListener('touchend',endDrag);
+}
+function onDrag(e){
+  if(!drag) return;
+  if(e.touches) e.preventDefault();
+  const cx=e.touches?e.touches[0].clientX:e.clientX;
+  const dx=cx-drag.startX;
+  const yearPx=drag.rowW/termYears();
+  const newStart=Math.round(drag.origStart + dx/yearPx);
+  if(newStart!==state.start[drag.i]) setStart(drag.i, newStart);
+}
+function endDrag(){
+  drag=null;
+  document.removeEventListener('mousemove',onDrag);
+  document.removeEventListener('mouseup',endDrag);
+  document.removeEventListener('touchmove',onDrag);
+  document.removeEventListener('touchend',endDrag);
+}
+
+function buildTetris(){
+  // 축 라벨 (= 1, 5, 10, ..., 40)
+  const axis=document.getElementById('t-axis');
+  axis.innerHTML='';
+  [1,5,10,15,20,25,30,35,40].forEach(yr=>{
+    const s=document.createElement('span');
+    s.style.left=`${(yr-1)/(termYears()-1)*100}%`;
+    s.textContent=yr+'년';
+    axis.appendChild(s);
+  });
+  // 격자 (= termYears()=30년 위치 표시)
+  const grid=document.getElementById('t-grid');
+  grid.innerHTML='';
+  [10,20,30,40].forEach(yr=>{
+    const v=document.createElement('div');v.className='vline';
+    v.style.left=`${(yr-1)/(termYears()-1)*100}%`;
+    grid.appendChild(v);
+  });
+
+  // 등급별 row + 바
+  const rows=document.getElementById('t-rows');
+  rows.innerHTML='';
+  GRADES.forEach((g,i)=>{
+    const row=document.createElement('div');row.className='tetris-row';
+    const durLabel = DURATION[g]===999 ? '만기까지' : '10년 한시';
+    row.innerHTML=`<div class="glabel">${SHORT[g]}<small>한도 ${limitOf(g,i)}만 · ${durLabel}</small></div>
+      <button class="gtoggle ${state.active[i]?'on':''}" data-i="${i}">${state.active[i]?'활성 ✓':'활성화'}</button>`;
+    rows.appendChild(row);
+  });
+
+  // 활성 등급 바 그리기
+  GRADES.forEach((g,i)=>{
+    if(!state.active[i]) return;
+    const rowEl=rows.children[i];
+    const start=state.start[i];
+    const len=barLen(i);
+    const bar=document.createElement('div');
+    bar.className=`bar g${i}`;
+    bar.style.left=`${(start-1)/termYears()*100}%`;
+    bar.style.width=`${len/termYears()*100}%`;
+    // 중첩 = 위 등급 중 = 활성 + 본인 활성 기간과 겹침
+    const upperFired = i<5 && GRADES.slice(i+1).some((ug,j)=>{
+      const ki=i+1+j;
+      if(!state.active[ki]) return false;
+      return state.start[ki] < start+len;  // 위 등급 시작 = 본인 끝나기 전이면 겹침
+    });
+    const amt = (g!=='1등급' && upperFired) ? limitOf(g,i)*2 : limitOf(g,i);
+    bar.innerHTML=`${amt}만/년${upperFired&&g!=='1등급'?'<span class="x2">×2</span>':''}`;
+    bar.onmousedown=e=>startDrag(e,i);
+    bar.ontouchstart=e=>startDrag(e,i);
+    rowEl.appendChild(bar);
+  });
+
+  // 토글 이벤트
+  rows.querySelectorAll('.gtoggle').forEach(b=>b.onclick=()=>toggleActive(+b.dataset.i));
+}
+function yearly(){
+  // 테트리스 모델 = 활성 바 = 각자 시작점/길이로 그림 위에 배치
+  // - 매년 y = 활성 바 안 등급 = 합산
+  // - 위 등급(인덱스 > i) 중 = 시작점 ≤ y로 발생된 게 있으면 = 본인 ×2
+  // - 1등급 = 항상 ×1
+  const arr=Array(termYears()).fill(0);
+  for(let y=1;y<=termYears();y++){
+    GRADES.forEach((g,i)=>{
+      if(!state.active[i]) return;
+      const s=state.start[i], len=barLen(i);
+      if(y<s || y>=s+len) return;  // 바 밖
+      const lim=limitOf(g,i);
+      if(g==='1등급'){ arr[y-1]+=lim; return; }
+      const upperFired = GRADES.slice(i+1).some((ug,j)=>state.active[i+1+j] && state.start[i+1+j]<=y);
+      arr[y-1] += upperFired ? lim*2 : lim;
+    });
+  }
+  return arr;
+}
+
+let chartData={y:[],c:[]};
+function compute(){
+  const ys=yearly();let cum=0;const cs=ys.map(v=>cum+=v);
+  // 표시는 SHOW년 시점 기준 (= 등급 진행은 termYears()=40, 화면은 termYears()=30)
+  const ysShow=ys.slice(0,termYears());const csShow=cs.slice(0,termYears());
+  const peak=Math.max(...ysShow,0),total=csShow[termYears()-1]||0,prem=premium();
+  document.getElementById('premV').innerHTML=prem.toLocaleString()+'<small>원/월</small>';
+  document.getElementById('peakV').innerHTML=peak.toLocaleString()+'<small>만원/년</small>';
+  document.getElementById('totV').innerHTML=total.toLocaleString()+'<small>만원</small>';
+  const paidTotal=prem*12*termYears();
+  const ratio = paidTotal>0 ? (total*10000/paidTotal) : 0;
+  const net = total - Math.round(paidTotal/10000);  // 순수익 (= 만원 단위)
+  document.getElementById('punch').innerHTML=
+    `월 <b>${prem.toLocaleString()}원</b> 내고 → 100세까지 누적 <b>${total.toLocaleString()}만원</b> 수령`+
+    (ratio?` <span style="opacity:.8">(낸 보험료의 약 ${ratio.toFixed(1)}배)</span>`:'')+
+    `<span class="net">└ 낸 보험료 (${prem.toLocaleString()}원 × ${termYears()*12}개월 = ${paidTotal.toLocaleString()}원) 빼고 순수익 = <b>${net.toLocaleString()}만원</b></span>`;
+  document.getElementById('meta').innerHTML=
+    `<span>가입 <b>${state.age}세 ${state.gender}</b></span><span><b>${state.sigang==='장기요양'?'장기요양':'뇌혈관질환'}</b> · ${state.plan==='뉴노멀I'?'뉴노멀 I':'뉴노멀 II'}</span><span>관찰 <b>${state.age}세→100세 (${termYears()}년)</b></span>`;
+  chartData={y:ysShow,c:csShow};draw();
+}
+function firstActiveStart(){
+  for(let i=0;i<GRADES.length;i++) if(state.active[i]) return state.start[i];
+  return 1;
+}
+function draw(targetCanvas){
+  const cv=targetCanvas||document.getElementById('chart'),dpr=window.devicePixelRatio||1;
+  const W=cv.clientWidth,H=360;cv.width=W*dpr;cv.height=H*dpr;const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  const pL=62,pR=88,pT=22,pB=36,cw=W-pL-pR,ch=H-pT-pB;
+  const ysAll=chartData.y, csAll=chartData.c;
+  // 능동 자르기 = 첫 활성 시작 시점 ~ 100세까지만 표시
+  const TR=termYears(), fs=firstActiveStart();
+  const ys=ysAll.slice(fs-1), cs=csAll.slice(fs-1);
+  const N=Math.max(1, ys.length);  // 표시 구간 길이
+  // Y축 좌측(매년) = 깔끔 단위 [10/20/50/100/200/500/1000]
+  // Y축 우측(누적) = 50 배수
+  const niceList=[10,20,50,100,200,500,1000,2000,5000];
+  const niceStepNice=(v)=>{
+    const raw=v*1.18/4;
+    for(const n of niceList) if(raw<=n) return n;
+    return Math.ceil(raw/1000)*1000;
+  };
+  const niceStep=(v,unit)=>Math.max(unit, Math.ceil(v*1.18/4/unit)*unit);
+  const stepY=niceStepNice(Math.max(...ys,1));
+  const stepC=niceStep(Math.max(...cs,1),50);
+  const maxY=stepY*4, maxC=stepC*4;
+  // y축 좌측 = 매년 받는 금액
+  ctx.strokeStyle='#e4e8f0';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(W-pR,y);ctx.stroke();}
+  ctx.fillStyle='#2f54d6';ctx.font='bold 14px sans-serif';ctx.textAlign='right';
+  for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.fillText(Math.round(maxY*(4-i)/4).toLocaleString(),pL-8,y+5);}
+  // x축 = 가입 연령 5세 간격 (= 시작세 ~ 100세)
+  const startAge=state.age+fs-1, endAge=100;
+  const labelAges=[];
+  if(startAge%5!==0) labelAges.push(startAge);  // 시작 = 5의 배수 아니면 같이 표시
+  for(let a=Math.ceil(startAge/5)*5; a<=endAge; a+=5) labelAges.push(a);
+  ctx.fillStyle='#16203a';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+  labelAges.forEach(a=>{
+    const yr=a-state.age+1;          // 그 나이의 년차 (1부터)
+    const idx=yr-fs;                  // 표시 인덱스
+    const x=pL+cw*idx/Math.max(1,N-1);
+    ctx.fillText(a+'세',x,H-12);
+  });
+  const xAt=i=>pL+cw*i/Math.max(1,N-1);
+  // 막대 = 진한 파랑
+  const bw=cw/N*0.65;ctx.fillStyle='#2f54d6';
+  ys.forEach((v,i)=>{if(v>0){const h=ch*v/maxY;ctx.fillRect(xAt(i)-bw/2,pT+ch-h,bw,h);}});
+  // 누적 라인 = 빨강 + 굵게
+  ctx.strokeStyle='#dc2626';ctx.lineWidth=4;ctx.beginPath();
+  cs.forEach((v,i)=>{const x=xAt(i),y=pT+ch-ch*v/maxC;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
+  // 끝점 dot
+  const lx=xAt(N-1),ly=pT+ch-ch*cs[N-1]/maxC;ctx.fillStyle='#dc2626';ctx.beginPath();ctx.arc(lx,ly,7,0,7);ctx.fill();
+  // 우측 누적 숫자
+  ctx.textAlign='left';ctx.fillStyle='#dc2626';ctx.font='bold 14px sans-serif';
+  for(let i=0;i<=4;i++){const y=pT+ch*i/4;ctx.fillText(Math.round(maxC*(4-i)/4).toLocaleString(),W-pR+8,y+5);}
+  // 100세 시점 누적 = 끝점 옆 큰 라벨
+  const finalCum=cs[N-1];
+  if(finalCum>0){
+    ctx.font='bold 18px sans-serif';ctx.textAlign='right';ctx.fillStyle='#fff';
+    const txt=finalCum.toLocaleString()+'만';
+    const tw=ctx.measureText(txt).width+18;
+    ctx.fillStyle='#dc2626';
+    // 박스 = 끝점 위 26px. 단 그래프 위쪽 padding(pT) 안으로 제한 = 짤림 방지
+    const bx=lx-tw-10, by=Math.max(pT, ly-26);
+    ctx.fillRect(bx,by,tw,24);
+    ctx.fillStyle='#fff';ctx.fillText(txt,bx+tw-9,by+17);
+  }
+}
+function render(){buildTetris();compute();}
+document.getElementById('saveBtn').onclick=()=>{
+  // 캡처용 wrapper = 940px 고정 (= 모바일에서도 가로 와이드 저장)
+  const w=document.createElement('div');
+  w.style.cssText='background:#eceff5;padding:18px;width:940px;position:fixed;left:-9999px;top:0';
+  const headerClone=document.getElementById('header').cloneNode(true);
+  const resultClone=document.getElementById('resultcard').cloneNode(true);
+  w.appendChild(headerClone);
+  w.appendChild(resultClone);
+  document.body.appendChild(w);
+  // 940px 안 canvas = 새로 그림 (= 모바일 좁은 화면에서도 가로 와이드 그래프)
+  const newCanvas=resultClone.querySelector('canvas');
+  if(newCanvas){
+    newCanvas.removeAttribute('id');
+    newCanvas.style.width='100%';
+    draw(newCanvas);
+  }
+  // 약간 지연 후 캡처 (= 레이아웃 적용 대기)
+  setTimeout(()=>{
+    html2canvas(w,{scale:2,backgroundColor:'#eceff5'}).then(c=>{
+      const a=document.createElement('a');
+      a.download=`브레인케어_${state.age}세_${state.gender}_${state.sigang}_${state.plan}.png`;
+      a.href=c.toDataURL('image/png');
+      a.click();
+      document.body.removeChild(w);
+    });
+  },50);
+};
+render();
 </script>
 </body>
 </html>
