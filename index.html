@@ -270,32 +270,35 @@ function toggleActive(i){
 }
 
 let drag=null;
+// Pointer Events = 마우스/터치/펜 통합 = iOS Safari 안정
 function startDrag(e,i){
   e.preventDefault();
   const rowEl=document.querySelectorAll('.tetris-row')[i];
-  drag={i, startX:(e.touches?e.touches[0].clientX:e.clientX), origStart:state.start[i], rowW:rowEl.clientWidth};
-  document.addEventListener('mousemove',onDrag);
-  document.addEventListener('mouseup',endDrag);
-  document.addEventListener('touchmove',onDrag,{passive:false});
-  document.addEventListener('touchend',endDrag);
+  drag={i, startX:e.clientX, origStart:state.start[i], rowW:rowEl.clientWidth, pointerId:e.pointerId};
+  // pointer capture = 손가락이 바 밖으로 나가도 이벤트 유지 (= iOS 핵심)
+  try{ e.target.setPointerCapture(e.pointerId); }catch(_){}
+  document.addEventListener('pointermove',onDrag);
+  document.addEventListener('pointerup',endDrag);
+  document.addEventListener('pointercancel',endDrag);
 }
 function onDrag(e){
   if(!drag) return;
-  if(e.touches) e.preventDefault();
-  const cx=e.touches?e.touches[0].clientX:e.clientX;
-  const dx=cx-drag.startX;
+  e.preventDefault();
+  const dx=e.clientX-drag.startX;
   const yearPx=drag.rowW/termYears();
   const newStart=Math.round(drag.origStart + dx/yearPx);
-  if(newStart!==state.start[drag.i]) setStart(drag.i, newStart, true);  // fast 모드 = DOM 재생성 X
+  if(newStart!==state.start[drag.i]) setStart(drag.i, newStart, true);
 }
-function endDrag(){
-  const wasDragging = !!drag;
+function endDrag(e){
+  const wasDragging=!!drag;
+  if(drag && e && e.target && drag.pointerId!=null){
+    try{ e.target.releasePointerCapture(drag.pointerId); }catch(_){}
+  }
   drag=null;
-  document.removeEventListener('mousemove',onDrag);
-  document.removeEventListener('mouseup',endDrag);
-  document.removeEventListener('touchmove',onDrag);
-  document.removeEventListener('touchend',endDrag);
-  if(wasDragging) render();  // 드래그 끝 = 전체 갱신 (= 라벨/상태 일치)
+  document.removeEventListener('pointermove',onDrag);
+  document.removeEventListener('pointerup',endDrag);
+  document.removeEventListener('pointercancel',endDrag);
+  if(wasDragging) render();
 }
 
 function buildTetris(){
@@ -346,8 +349,7 @@ function buildTetris(){
     });
     const amt = (g!=='1등급' && upperFired) ? limitOf(g,i)*2 : limitOf(g,i);
     bar.innerHTML=`${amt}만/년${upperFired&&g!=='1등급'?'<span class="x2">×2</span>':''}`;
-    bar.addEventListener('mousedown',e=>startDrag(e,i));
-    bar.addEventListener('touchstart',e=>startDrag(e,i),{passive:false});
+    bar.addEventListener('pointerdown',e=>startDrag(e,i));
     rowEl.appendChild(bar);
   });
 
