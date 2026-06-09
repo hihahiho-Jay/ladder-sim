@@ -122,7 +122,7 @@
     <div class="checks" id="checks"></div>
   </div>
 
-  <div class="card">
+  <div class="card" id="chartcard">
     <div class="chartbox" id="chartbox">
       <div class="chart-inner" id="chart-inner">
         <canvas id="chart"></canvas>
@@ -534,12 +534,14 @@ document.getElementById('saveBtn').onclick=()=>{
   const w=document.createElement('div');
   w.style.cssText='background:#eceff5;padding:18px;width:940px;position:fixed;left:-9999px;top:0';
   const headerClone=document.getElementById('header').cloneNode(true);
+  const chartClone=document.getElementById('chartcard').cloneNode(true);
   const resultClone=document.getElementById('resultcard').cloneNode(true);
   w.appendChild(headerClone);
+  w.appendChild(chartClone);
   w.appendChild(resultClone);
   document.body.appendChild(w);
-  // 940px 안 canvas = 새로 그림 (= 모바일 좁은 화면에서도 가로 와이드 그래프)
-  const newCanvas=resultClone.querySelector('canvas');
+  // 940px 안 canvas = 새로 그림
+  const newCanvas=chartClone.querySelector('canvas');
   if(newCanvas){
     newCanvas.removeAttribute('id');
     newCanvas.style.width='100%';
