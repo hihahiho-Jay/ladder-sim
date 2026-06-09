@@ -401,8 +401,9 @@ function compute(){
   const net = total - Math.round(paidTotal/10000);  // 순수익 (= 만원 단위)
   const paidMan = Math.round(paidTotal/10000);
   document.getElementById('punch').innerHTML=
-    `<span class="note">100세까지 기준</span>`+
-    `<div class="row">월 <b>${prem.toLocaleString()}원</b> 내고 누적 <b>${total.toLocaleString()}만원</b> 수령</div>`+
+    `<span class="note">100세 기준</span>`+
+    `<div class="row">월 <b>${prem.toLocaleString()}원</b> 내고</div>`+
+    `<div class="row">누적 <b>${total.toLocaleString()}만원</b> 수령</div>`+
     `<div class="row paid div-line">낸 보험료 = 월 ${prem.toLocaleString()}원 × ${termYears()}년 = <b>${paidMan.toLocaleString()}만원</b></div>`+
     `<div class="row">순수익 = <b>${net.toLocaleString()}만원</b></div>`;
   document.getElementById('meta').innerHTML=
