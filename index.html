@@ -363,7 +363,7 @@ function buildOverlay(){
   overlay.innerHTML='';
   if(!chartGeom) return;
   const {pL, pT, ch, cw, N, fs} = chartGeom;
-  const rowH = 18;  // 좀 더 컴팩트
+  const rowH = chartGeom.rowH || 35;  // draw()에서 결정 = 두꺼운 막대
   overlay.style.left = pL+'px';
   overlay.style.top = pT+'px';
   overlay.style.width = cw+'px';
@@ -488,8 +488,10 @@ function draw(targetCanvas, screenWOverride){
   const W=cv.clientWidth;
   cv.width=W*dpr; cv.height=H*dpr;
   const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
-  // 영역 분리 = 위 = 등급 막대 (캔버스 거의 최상단) / 아래 = 매년 그래프 (= 크게)
-  const overlayH = 18*6 + 4;
+  // 영역 분리 = 위 = 등급 막대 (캔버스 거의 최상단) / 아래 = 매년 그래프
+  // rowH=35 = 막대 두꺼움 / 그래프 영역(ch) = 30% 줄어듬 (기존 rowH=18 대비)
+  const rowH = 35;
+  const overlayH = rowH*6 + 4;
   const pL=44, pR=44;
   const barTop = 6;                        // 등급 막대 = 거의 위쪽
   const pT = barTop + overlayH + 10;
@@ -567,7 +569,7 @@ function draw(targetCanvas, screenWOverride){
     ctx.fillText(txt,bx+tw-7,by+14);
   }
   // overlay 정렬용 좌표 저장
-  if(!targetCanvas) chartGeom = {pL, pT:barTop, ch, cw, N, fs, axisOffset: pT+ch-barTop};
+  if(!targetCanvas) chartGeom = {pL, pT:barTop, ch, cw, N, fs, rowH, axisOffset: pT+ch-barTop};
 }
 function render(){buildChecks();compute();buildOverlay();}
 document.getElementById('saveBtn').onclick=()=>{
