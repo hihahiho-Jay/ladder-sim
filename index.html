@@ -363,7 +363,7 @@ function buildOverlay(){
   overlay.innerHTML='';
   if(!chartGeom) return;
   const {pL, pT, ch, cw, N, fs} = chartGeom;
-  const rowH = chartGeom.rowH || 35;  // draw()에서 결정 = 두꺼운 막대
+  const rowH = chartGeom.rowH || 50;  // draw()에서 결정 = 두툼한 막대 (드래그 쉬움)
   overlay.style.left = pL+'px';
   overlay.style.top = pT+'px';
   overlay.style.width = cw+'px';
@@ -477,8 +477,8 @@ function draw(targetCanvas, screenWOverride){
     if(inner){ inner.style.width = innerW+'px'; }
     cv.style.width = innerW+'px';
   }
-  // H = 화면 높이의 60% (= 위아래 캔버스 키움, min 360 / max 620)
-  const H = Math.max(360, Math.min(Math.round((window.innerHeight||720)*0.6), 620));
+  // H = 화면 높이의 70% (= 두꺼운 막대 + 그래프 영역 둘 다 확보, min 440 / max 720)
+  const H = Math.max(440, Math.min(Math.round((window.innerHeight||720)*0.7), 720));
   if(!targetCanvas){
     // chartbox = canvas + padding-top(20) 같이 = 잘림 방지
     const cb=document.getElementById('chartbox'); if(cb) cb.style.height=(H+20)+'px';
@@ -489,8 +489,8 @@ function draw(targetCanvas, screenWOverride){
   cv.width=W*dpr; cv.height=H*dpr;
   const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
   // 영역 분리 = 위 = 등급 막대 (캔버스 거의 최상단) / 아래 = 매년 그래프
-  // rowH=35 = 막대 두꺼움 / 그래프 영역(ch) = 30% 줄어듬 (기존 rowH=18 대비)
-  const rowH = 35;
+  // rowH=50 = 막대 두툼 + 드래그 쉬움 / 그래프 영역(ch) = 또 30% 줄어듬 (기존 35 대비)
+  const rowH = 50;
   const overlayH = rowH*6 + 4;
   const pL=44, pR=44;
   const barTop = 6;                        // 등급 막대 = 거의 위쪽
