@@ -461,13 +461,14 @@ function firstActiveStart(){
   for(let i=0;i<GRADES.length;i++) if(state.active[i]) return state.start[i];
   return 1;
 }
-function draw(targetCanvas){
+function draw(targetCanvas, screenWOverride){
   const cv=targetCanvas||document.getElementById('chart'),dpr=window.devicePixelRatio||1;
   // 차트 안쪽 = 큰 너비 (= 가로 스크롤). 년차당 px = 화면 크기에 따라 자동
   const TR=termYears(), fs=firstActiveStart();
   const N=Math.max(1, TR-fs+1);
   // 40년 = 화면 너비 고정. N <= 40 = 한 화면 (= 스크롤 X) / N > 40 = 가로 스크롤
-  const screenW = (window.innerWidth||360) - 20;
+  // 캡처 모드 = screenWOverride 강제 (= 940 wrapper 너비)
+  const screenW = screenWOverride ? screenWOverride : ((window.innerWidth||360) - 20);
   const yearPx = screenW / 40;
   const innerW = N <= 40 ? screenW : Math.round(N * yearPx);
   // chart-inner 너비 강제 (= 캡처 wrapper에는 무관 = 그 때 직접 설정)
@@ -571,8 +572,9 @@ function draw(targetCanvas){
 function render(){buildChecks();compute();buildOverlay();}
 document.getElementById('saveBtn').onclick=()=>{
   // 캡처용 wrapper = 940px 고정 (= 모바일에서도 가로 와이드 저장)
+  const WRAP_W = 940, WRAP_PAD = 18, INNER_W = WRAP_W - WRAP_PAD*2;  // = 904
   const w=document.createElement('div');
-  w.style.cssText='background:#eceff5;padding:18px;width:940px;position:fixed;left:-9999px;top:0';
+  w.style.cssText=`background:#eceff5;padding:${WRAP_PAD}px;width:${WRAP_W}px;position:fixed;left:-9999px;top:0`;
   const headerClone=document.getElementById('header').cloneNode(true);
   const chartClone=document.getElementById('chartcard').cloneNode(true);
   const resultClone=document.getElementById('resultcard').cloneNode(true);
@@ -580,12 +582,36 @@ document.getElementById('saveBtn').onclick=()=>{
   w.appendChild(chartClone);
   w.appendChild(resultClone);
   document.body.appendChild(w);
-  // 940px 안 canvas = 새로 그림
+  // 원본 chartGeom = 폰 너비 기준. 캡처 = 940 wrapper 기준 = 비율 변경 필요
+  const oldCw = chartGeom ? chartGeom.cw : INNER_W;
+  // 940 wrapper 안 = chart-inner 너비 = INNER_W로 강제 + canvas redraw (= 새 chartGeom)
+  const clonedInner = chartClone.querySelector('.chart-inner');
+  if(clonedInner){
+    clonedInner.style.width = INNER_W+'px';
+  }
   const newCanvas=chartClone.querySelector('canvas');
   if(newCanvas){
     newCanvas.removeAttribute('id');
-    newCanvas.style.width='100%';
-    draw(newCanvas);
+    newCanvas.style.width = INNER_W+'px';
+    // 두 번째 인자 = 캡처 screen 너비 강제 (= INNER_W + 20 padding)
+    draw(newCanvas, INNER_W+20);
+  }
+  // 새 chartGeom = INNER_W 기준 (= draw 호출로 갱신됨)
+  const newCw = chartGeom ? chartGeom.cw : INNER_W;
+  const ratio = newCw / oldCw;
+  // clone overlay 안 = 막대/점선/라벨 좌표 = 비율 곱해서 = 940 그래프에 맞춤
+  const clonedOverlay = chartClone.querySelector('.bar-overlay');
+  if(clonedOverlay){
+    const oldOvW = parseFloat(clonedOverlay.style.width) || oldCw;
+    clonedOverlay.style.width = (oldOvW * ratio)+'px';
+    clonedOverlay.querySelectorAll('.bar, .age-line, .age-line-down, .age-label').forEach(el=>{
+      const left = parseFloat(el.style.left) || 0;
+      el.style.left = (left * ratio)+'px';
+      if(el.classList.contains('bar')){
+        const bw = parseFloat(el.style.width) || 0;
+        el.style.width = (bw * ratio)+'px';
+      }
+    });
   }
   // 약간 지연 후 캡처 (= 레이아웃 적용 대기)
   setTimeout(()=>{
@@ -595,6 +621,8 @@ document.getElementById('saveBtn').onclick=()=>{
       a.href=c.toDataURL('image/png');
       a.click();
       document.body.removeChild(w);
+      // 원본 화면 = chartGeom 복구 (= 캡처 시 갱신된 거 = 원래 폰 너비 기준 다시)
+      render();
     });
   },50);
 };
