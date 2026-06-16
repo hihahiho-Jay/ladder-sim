@@ -26,14 +26,15 @@
   .seg button.on{background:var(--blue);color:#fff}
   select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-weight:700;color:var(--ink);background:var(--paper)}
   /* 등급 선택 = 한 줄 6칸 (= select 펼침 = 가입금액 선택) */
-  .checks{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:6px}
-  .grade-wrap{background:#fff;border:2px solid var(--line);border-radius:7px;
-    padding:6px 3px;text-align:center;user-select:none;transition:.12s;line-height:1.2}
+  .checks{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:6px}
+  .grade-wrap{background:#fff;border:2px solid var(--line);border-radius:6px;
+    padding:4px 1px;text-align:center;user-select:none;transition:.12s;line-height:1.1}
   .grade-wrap.on{border-color:#dc2626;background:#fff5f5}
-  .grade-wrap .grade-label{font-size:11px;font-weight:800;color:var(--ink2);margin-bottom:3px}
+  .grade-wrap .grade-label{font-size:11px;font-weight:800;color:var(--ink2);margin-bottom:2px}
   .grade-wrap.on .grade-label{color:#dc2626}
-  .grade-sel{width:100%;font-size:12px;font-weight:700;padding:4px 2px;
-    border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);cursor:pointer}
+  .grade-sel{width:100%;font-size:13px;font-weight:700;padding:3px 1px;
+    border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;
+    -webkit-appearance:none;-moz-appearance:none;appearance:none;text-align:center;text-align-last:center}
   .grade-wrap.on .grade-sel{border-color:#dc2626;color:#dc2626}
   /* 차트 영역 = 가로 스크롤만. 세로 = JS로 화면 비율에 맞춰 동적 */
   .chartbox{position:relative;margin-top:4px;overflow-x:auto;overflow-y:visible;
@@ -393,15 +394,15 @@ function buildChecks(){
     wrap.appendChild(lbl);
     const sel=document.createElement('select');
     sel.className='grade-sel';
-    // 옵션 = "✕ 제외" + 가입금액 list (50만 단위, 한도까지)
+    // 옵션 = "✕" (제외) + 숫자만 (= 단위 "만" 생략, 폰 너비 절약)
     const optX=document.createElement('option');
     optX.value='0';
-    optX.textContent='✕ 제외';
+    optX.textContent='✕';
     sel.appendChild(optX);
     amountOptions(i).forEach(m=>{
       const o=document.createElement('option');
       o.value=String(m);
-      o.textContent=m+'만';
+      o.textContent=String(m);
       sel.appendChild(o);
     });
     sel.value = state.active[i] ? String(state.amount[i]) : '0';
