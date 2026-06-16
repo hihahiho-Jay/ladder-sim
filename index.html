@@ -142,8 +142,8 @@
     <div class="punch" id="punch"></div>
     <div class="topgrid">
       <div class="stat pay"><div class="k">매달 내는 보험료</div><div class="v" id="premV">0<small>원</small></div></div>
-      <div class="stat peak"><div class="k">최대 연 수령액</div><div class="v" id="peakV">0<small>만원</small></div></div>
-      <div class="stat total"><div class="k">100세까지 누적 수령</div><div class="v" id="totV">0<small>만원</small></div></div>
+      <div class="stat peak"><div class="k">최대 월 수령액</div><div class="v" id="peakV">0<small>만원</small></div></div>
+      <div class="stat total"><div class="k">평생 누적 수령</div><div class="v" id="totV">0<small>만원</small></div></div>
     </div>
     <div class="meta">
       <div class="meta-text" id="meta"></div>
@@ -504,12 +504,12 @@ function yearly(){
       if(!state.active[i]) return;
       const s=state.start[i], len=barLen(i);
       if(y<s || y>=s+len) return;  // 바 밖
-      // 라이나 룰: 매월 가입금액의 10% 지급 (= 매년 = 가입금액 × 12 × 10% = 1.2배)
-      //          등급 상향 시 = 매월 20% (= 매년 × 2.4배 = 1.2 × 2)
-      const annual = state.amount[i] * 12 * 0.10;
-      if(g==='1등급'){ arr[y-1]+=annual; return; }
+      // 라이나 룰: 매월 가입금액의 10% 지급 (등급 상향 시 = 매월 20%)
+      // Y축 = 매월 받는 돈 (= 만원/월). 누적은 cs[N-1] × 12로 만원 단위 종신 환산.
+      const monthly = state.amount[i] * 0.10;
+      if(g==='1등급'){ arr[y-1]+=monthly; return; }
       const upperFired = GRADES.slice(i+1).some((ug,j)=>state.active[i+1+j] && state.start[i+1+j]<=y);
-      arr[y-1] += upperFired ? annual*2 : annual;
+      arr[y-1] += upperFired ? monthly*2 : monthly;
     });
   }
   return arr;
@@ -520,9 +520,13 @@ function compute(){
   const ys=yearly();let cum=0;const cs=ys.map(v=>cum+=v);
   // 표시는 SHOW년 시점 기준 (= 등급 진행은 termYears()=40, 화면은 termYears()=30)
   const ysShow=ys.slice(0,termYears());const csShow=cs.slice(0,termYears());
-  const peak=Math.max(...ysShow,0),total=csShow[termYears()-1]||0,prem=premium();
+  // ys/cs = 매월 단위(만원). peak = 매월 최대 수령액. total = 종신 누적 = cs[N-1] × 12
+  const peak=Math.max(...ysShow,0);
+  const totalMonthly = csShow[termYears()-1]||0;
+  const total = Math.round(totalMonthly * 12);  // 매월 합 × 12 = 평생 받는 총액 만원
+  const prem=premium();
   document.getElementById('premV').innerHTML=prem.toLocaleString()+'<small>원/월</small>';
-  document.getElementById('peakV').innerHTML=peak.toLocaleString()+'<small>만원/년</small>';
+  document.getElementById('peakV').innerHTML=peak.toLocaleString()+'<small>만원/월</small>';
   document.getElementById('totV').innerHTML=total.toLocaleString()+'<small>만원</small>';
   const payYears = Math.min(state.payTerm, termYears());  // = 납입기간이 끝나기 전에 사망하면 = 그 전까지만
   const paidTotal=prem*12*payYears;
@@ -532,7 +536,7 @@ function compute(){
   document.getElementById('punch').innerHTML=
     `<span class="note">${state.endAge}세 기준</span>`+
     `<div class="row">월 <b>${prem.toLocaleString()}원</b> 내고</div>`+
-    `<div class="row">누적 <b>${total.toLocaleString()}만원</b> 수령</div>`+
+    `<div class="row">평생 누적 <b>${total.toLocaleString()}만원</b> 수령</div>`+
     `<div class="row paid div-line">낸 보험료 = 월 ${prem.toLocaleString()}원 × ${payYears}년 = <b>${paidMan.toLocaleString()}만원</b></div>`+
     `<div class="row">순수익 = <b>${net.toLocaleString()}만원</b></div>`;
   document.getElementById('meta').innerHTML=
