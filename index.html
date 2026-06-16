@@ -440,12 +440,14 @@ function buildOverlay(){
       if(!state.active[ki]) return false;
       return state.start[ki] < start+len;
     });
-    const amt = (g!=='1등급' && upperFired) ? state.amount[i]*2 : state.amount[i];
+    // 막대 라벨 = 매월 받는 돈 (= 가입금액의 10%, 등급 상향 시 20%)
+    const monthly = (g!=='1등급' && upperFired) ? state.amount[i]*0.20 : state.amount[i]*0.10;
+    const amtStr = (monthly===Math.floor(monthly)) ? `${monthly}` : monthly.toFixed(1);
     const bar=document.createElement('div');
     bar.className=`bar g${i}`;
     bar.style.left = Math.max(0,x1)+'px';
     bar.style.width = Math.max(20, x2-x1)+'px';
-    bar.innerHTML = `${amt}만/월${upperFired&&g!=='1등급'?'<span class="x2">×2</span>':''}`;
+    bar.innerHTML = `${amtStr}만/월${upperFired&&g!=='1등급'?'<span class="x2">×2</span>':''}`;
     bar.addEventListener('pointerdown',e=>startDrag(e,i));
     r.appendChild(bar);
     // 시작 점선 + 나이 라벨 = 계단식
@@ -481,10 +483,12 @@ function yearly(){
       if(!state.active[i]) return;
       const s=state.start[i], len=barLen(i);
       if(y<s || y>=s+len) return;  // 바 밖
-      const lim=state.amount[i];  // 매니저 선택 가입금액 (만원)
-      if(g==='1등급'){ arr[y-1]+=lim; return; }
+      // 라이나 룰: 매월 가입금액의 10% 지급 (= 매년 = 가입금액 × 12 × 10% = 1.2배)
+      //          등급 상향 시 = 매월 20% (= 매년 × 2.4배 = 1.2 × 2)
+      const annual = state.amount[i] * 12 * 0.10;
+      if(g==='1등급'){ arr[y-1]+=annual; return; }
       const upperFired = GRADES.slice(i+1).some((ug,j)=>state.active[i+1+j] && state.start[i+1+j]<=y);
-      arr[y-1] += upperFired ? lim*2 : lim;
+      arr[y-1] += upperFired ? annual*2 : annual;
     });
   }
   return arr;
