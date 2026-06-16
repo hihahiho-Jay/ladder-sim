@@ -25,17 +25,17 @@
   .seg button{flex:1;border:none;background:var(--paper);padding:9px 4px;font-size:13px;font-weight:700;color:var(--ink2);cursor:pointer}
   .seg button.on{background:var(--blue);color:#fff}
   select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-weight:700;color:var(--ink);background:var(--paper)}
-  /* 등급 선택 = 한 줄 6칸 (= select 펼침 = 가입금액 선택) */
+  /* 등급 선택 = 한 줄 6칸. 비활성 = 회색 / 활성 = 빨강 + 가입금액 표시 */
   .checks{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:6px}
   .grade-wrap{background:#fff;border:2px solid var(--line);border-radius:6px;
     padding:4px 1px;text-align:center;user-select:none;transition:.12s;line-height:1.1}
   .grade-wrap.on{border-color:#dc2626;background:#fff5f5}
   .grade-wrap .grade-label{font-size:11px;font-weight:800;color:var(--ink2);margin-bottom:2px}
   .grade-wrap.on .grade-label{color:#dc2626}
-  .grade-sel{width:100%;font-size:13px;font-weight:700;padding:3px 1px;
-    border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;
+  .grade-sel{width:100%;font-size:12px;font-weight:700;padding:3px 1px;
+    border:1px solid var(--line);border-radius:4px;background:#fff;color:#9ca3af;cursor:pointer;
     -webkit-appearance:none;-moz-appearance:none;appearance:none;text-align:center;text-align-last:center}
-  .grade-wrap.on .grade-sel{border-color:#dc2626;color:#dc2626}
+  .grade-wrap.on .grade-sel{border-color:#dc2626;color:#dc2626;background:#fff;font-size:13px}
   /* 차트 영역 = 가로 스크롤만. 세로 = JS로 화면 비율에 맞춰 동적 */
   .chartbox{position:relative;margin-top:4px;overflow-x:auto;overflow-y:visible;
     -webkit-overflow-scrolling:touch;touch-action:pan-x;background:#fafbfd;border-radius:10px;
@@ -167,10 +167,10 @@ function termYears(){return Math.max(1, state.endAge - state.age + 1);}
 
 // active[i] = 등급 활성 여부 / start[i] = 발생 년차 (1부터) / amount[i] = 가입금액 만원
 // GRADES 순 = 인지지원/5/4/3/2/1 (= 인덱스 0~5)
-// 매니저 룰: 인지(i=0) 선택 시 = 6개 다 자동 활성 + 디폴트 가입금액
+// 매니저 정책 (2026-06-16 개선): 디폴트 = 아무것도 선택 X. 매니저가 박스 클릭 → 드롭다운 → 선택 → 활성 + 위 자동 활성
 const state={age:50,gender:'남',sigang:'장기요양',plan:'뉴노멀I',
   payTerm:20,endAge:100,
-  active:[true,true,true,true,true,true],
+  active:[false,false,false,false,false,false],
   amount:[...DEFAULT_AMOUNTS],
   start: [1,7,17,27,30,35]};
 
@@ -381,7 +381,8 @@ function endDrag(e){
 }
 
 const SHORT_LABEL=['인지','5급','4급','3급','2급','1급'];
-// 등급 select 6개 = "✕ 제외 / 50만 / 100만 / ... / 한도최대"
+// 매니저 정책 (2026-06-16): 비활성 = "선택" placeholder + 금액 list (제외 옵션 X)
+//                          활성 = 가입금액 표시 + "✕ 제외" + 금액 list (= 매니저가 변경 또는 제외)
 function buildChecks(){
   const box=document.getElementById('checks');
   box.innerHTML='';
@@ -394,19 +395,39 @@ function buildChecks(){
     wrap.appendChild(lbl);
     const sel=document.createElement('select');
     sel.className='grade-sel';
-    // 옵션 = "✕" (제외) + 숫자만 (= 단위 "만" 생략, 폰 너비 절약)
-    const optX=document.createElement('option');
-    optX.value='0';
-    optX.textContent='✕';
-    sel.appendChild(optX);
-    amountOptions(i).forEach(m=>{
-      const o=document.createElement('option');
-      o.value=String(m);
-      o.textContent=String(m);
-      sel.appendChild(o);
-    });
-    sel.value = state.active[i] ? String(state.amount[i]) : '0';
-    sel.onchange=(e)=>setGradeAmount(i, +e.target.value);
+    if(state.active[i]){
+      // 활성 = "✕ 제외" + 금액 list (매니저 변경 또는 제외)
+      const optX=document.createElement('option');
+      optX.value='0';
+      optX.textContent='✕ 제외';
+      sel.appendChild(optX);
+      amountOptions(i).forEach(m=>{
+        const o=document.createElement('option');
+        o.value=String(m);
+        o.textContent=m+'만';
+        sel.appendChild(o);
+      });
+      sel.value=String(state.amount[i]);
+    } else {
+      // 비활성 = "선택" placeholder + 금액 list (= 매니저 = 선택하면 활성)
+      const optP=document.createElement('option');
+      optP.value='';
+      optP.textContent='선택';
+      optP.disabled=true;
+      optP.selected=true;
+      sel.appendChild(optP);
+      amountOptions(i).forEach(m=>{
+        const o=document.createElement('option');
+        o.value=String(m);
+        o.textContent=m+'만';
+        sel.appendChild(o);
+      });
+    }
+    sel.onchange=(e)=>{
+      const v=e.target.value;
+      if(v==='') return;   // placeholder 무시
+      setGradeAmount(i, +v);
+    };
     wrap.appendChild(sel);
     box.appendChild(wrap);
   });
