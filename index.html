@@ -567,8 +567,10 @@ function draw(targetCanvas, screenWOverride){
   };
   const niceStep=(v,unit)=>Math.max(unit, Math.ceil(v*1.18/4/unit)*unit);
   const stepC=niceStep(Math.max(...cs,1),50);
-  // Y축 매년 = 600 고정 + 100 단위 6분할 (= 0/100/200/300/400/500/600)
-  const maxY=600;
+  // Y축 매년 = 동적 = 매니저 가입금액 합 + ×2 효과 자동 반영 (= 데이터 기반, 100 단위 6분할)
+  const ysMax = Math.max(...ys, 1);
+  const stepY = Math.max(100, Math.ceil(ysMax*1.18/6/100)*100);  // 6분할 단위
+  const maxY = stepY*6;
   const maxC=stepC*4;
   // y축 좌측 = 매년 받는 금액 = 6분할 (= 100 단위)
   ctx.strokeStyle='#e4e8f0';ctx.lineWidth=1;
