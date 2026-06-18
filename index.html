@@ -252,19 +252,30 @@ function amountOptions(i){
 //   뉴노멀I = 300만 / 뉴노멀II = 100만
 const MC_AMOUNT={'뉴노멀I':300,'뉴노멀II':100};
 
+// 가입나이 → 적용 가능 납입기간 (라이나 상품 룰)
+//   30~69세: 20/30년 (10은 fallback 20)
+//   70세:    10/20년 (30은 fallback 20)
+//   71~75세: 종신 자동
+function resolvePayTerm(age, pt){
+  if (age >= 71) return '종신';
+  if (age >= 70) return pt === '30' ? '20' : pt;
+  return pt === '10' ? '20' : pt;
+}
+
 function premium(){
   let sum=0;
+  const pt = resolvePayTerm(state.age, String(state.payTerm));
   // 6등급 보장 특약
   GRADES.forEach((g,i)=>{
     if(!state.active[i]) return;
-    const k=`${state.sigang}|${state.plan}|${state.classic}|${state.gender}|${g}`;
+    const k=`${state.sigang}|${state.plan}|${state.classic}|${state.gender}|${pt}|${g}`;
     const baseV=premAt(k, state.age);   // 50만 가입 기준 보험료(원)
     if(baseV) sum += baseV * state.amount[i] / 50;
   });
-  // 주계약 (= 라이나 룰 = 자동 강제, 가입금액 = 플랜 따라 300만/100만 고정)
-  const mcK=`주계약|${state.plan}|${state.classic}|${state.gender}`;
+  // 주계약 (라이나 룰 자동 강제, 가입금액 = 플랜별 300만/100만 고정)
+  const mcK=`주계약|${state.plan}|${state.classic}|${state.gender}|${pt}`;
   const mcBaseV=premAt(mcK, state.age);
-  if(mcBaseV) sum += mcBaseV;  // 가입금액이 PREM 박힌 기준과 동일 (= 비율 1)
+  if(mcBaseV) sum += mcBaseV;
   return Math.round(sum);
 }
 
