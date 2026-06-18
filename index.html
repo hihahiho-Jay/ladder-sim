@@ -19,7 +19,9 @@
   .eyebrow{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:1.5px;margin-bottom:7px}
   h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
   h1 .s{display:block;font-size:13px;font-weight:500;color:var(--ink2);margin-top:6px}
-  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:13px;margin-top:4px}
+  .controls{display:flex;flex-direction:column;gap:11px;margin-top:4px}
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:520px){.row3{grid-template-columns:repeat(3,1fr);gap:7px}}
   label.l{display:block;font-size:11px;font-weight:800;color:var(--ink2);margin-bottom:6px;letter-spacing:.3px}
   .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
   .seg button{flex:1;border:none;background:var(--paper);padding:9px 4px;font-size:13px;font-weight:700;color:var(--ink2);cursor:pointer}
@@ -115,14 +117,20 @@
   <div class="card">
     <div class="eyebrow">가입 조건</div>
     <div class="controls">
-      <div><label class="l">가입 나이</label><select id="age"></select></div>
-      <div><label class="l">사망(끝) 나이</label><select id="endAge"></select></div>
-      <div><label class="l">납입기간</label><div class="seg" id="payTerm"><button data-v="10">10년</button><button data-v="20" class="on">20년</button><button data-v="30">30년</button></div></div>
-      <div><label class="l">성별</label><div class="seg" id="gender"><button data-v="남" class="on">남</button><button data-v="여">여</button></div></div>
-      <div><label class="l">종류</label><div class="seg" id="sigang"><button data-v="장기요양" class="on">장기요양</button><button data-v="뇌혈관">뇌혈관</button></div></div>
-      <div><label class="l">플랜</label><div class="seg" id="plan"><button data-v="뉴노멀I" class="on">뉴노멀 I</button><button data-v="뉴노멀II">뉴노멀 II</button></div></div>
-      <div><label class="l">상품유형</label><div class="seg" id="classic"><button data-v="일반" class="on">일반</button><button data-v="클래식">클래식</button></div></div>
-      <div><label class="l">만기</label><div class="seg" id="maturity"><button data-v="종신" class="on">종신</button><button data-v="90세">90세</button></div></div>
+      <div class="row3">
+        <div><label class="l">가입 나이</label><select id="age"></select></div>
+        <div><label class="l">사망(끝) 나이</label><select id="endAge"></select></div>
+        <div><label class="l">성별</label><div class="seg" id="gender"><button data-v="남" class="on">남</button><button data-v="여">여</button></div></div>
+      </div>
+      <div class="row3">
+        <div><label class="l">상품</label><div class="seg" id="plan"><button data-v="뉴노멀I" class="on">뉴노멀 I</button><button data-v="뉴노멀II">뉴노멀 II</button></div></div>
+        <div><label class="l">유형</label><div class="seg" id="classic"><button data-v="일반" class="on">일반</button><button data-v="클래식">클래식</button></div></div>
+      </div>
+      <div class="row3">
+        <div><label class="l">종류</label><div class="seg" id="sigang"><button data-v="장기요양" class="on">장기요양</button><button data-v="뇌혈관">뇌혈관</button></div></div>
+        <div><label class="l">납입기간</label><div class="seg" id="payTerm"><button data-v="20" class="on">20년</button><button data-v="30">30년</button></div></div>
+        <div><label class="l">만기</label><div class="seg" id="maturity"><button data-v="종신" class="on">종신</button><button data-v="90세">90세</button></div></div>
+      </div>
     </div>
   </div>
 
@@ -188,10 +196,36 @@ ageSel.onchange=e=>{
   state.age=+e.target.value;
   if(state.endAge<=state.age) state.endAge=Math.min(110, state.age+1);
   buildEndAge();
-  clampAmounts();   // 한도 변경 = 가입금액 자동 clamp
+  applyAgeConstraints();   // 만기/납입기간 옵션 자동 조정
+  clampAmounts();
   clampStarts();
   render();
 };
+
+// 나이 따라 만기/납입기간 옵션 동적 = 데이터 있는 조합만 활성
+function applyAgeConstraints(){
+  const age = state.age;
+  // 만기: 70+ = 종신 고정 (90세 비활성), 69- = 종신/90세 선택
+  const matBox = document.getElementById('maturity');
+  const matBtn90 = matBox.querySelector('button[data-v="90세"]');
+  if(age >= 70){
+    state.maturity = '종신';
+    matBox.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v==='종신'));
+    matBtn90.disabled = true; matBtn90.style.opacity='0.35'; matBtn90.style.cursor='not-allowed';
+  } else {
+    matBtn90.disabled = false; matBtn90.style.opacity=''; matBtn90.style.cursor='';
+  }
+  // 납입기간: 60+ = 20년 고정 (30년 비활성), 59- = 20/30 선택
+  const ptBox = document.getElementById('payTerm');
+  const ptBtn30 = ptBox.querySelector('button[data-v="30"]');
+  if(age >= 60){
+    state.payTerm = 20;
+    ptBox.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v==='20'));
+    ptBtn30.disabled = true; ptBtn30.style.opacity='0.35'; ptBtn30.style.cursor='not-allowed';
+  } else {
+    ptBtn30.disabled = false; ptBtn30.style.opacity=''; ptBtn30.style.cursor='';
+  }
+}
 // 사망(끝) 나이 select = 가입나이+1 ~ 110
 const endSel=document.getElementById('endAge');
 function buildEndAge(){
@@ -228,6 +262,7 @@ function premAt(key, age){
 }
 function seg(id,key){const b=document.getElementById(id);b.querySelectorAll('button').forEach(x=>x.onclick=()=>{b.querySelectorAll('button').forEach(y=>y.classList.remove('on'));x.classList.add('on');state[key]=x.dataset.v;render();});}
 seg('gender','gender');seg('sigang','sigang');seg('plan','plan');seg('classic','classic');seg('maturity','maturity');
+applyAgeConstraints();   // 초기 가입나이에 따라 만기/납입기간 옵션 자동 조정
 
 // 한도 = 가입 시점 나이 기준 (= 50세 가입 → 평생 64이하, 65세+ 가입 → 평생 65이상)
 function limitOf(g){
