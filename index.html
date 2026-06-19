@@ -616,8 +616,7 @@ function compute(){
     `<span class="note">${state.endAge}세 기준</span>`+
     `<div class="row">월 <b>${prem.toLocaleString()}원</b> 내고</div>`+
     `<div class="row">평생 누적 <b>${total.toLocaleString()}만원</b> 수령</div>`+
-    `<div class="row paid div-line">낸 보험료 = 월 ${prem.toLocaleString()}원 × ${payYears}년 = <b>${paidMan.toLocaleString()}만원</b></div>`+
-    `<div class="row">순수익 = <b>${net.toLocaleString()}만원</b></div>`;
+    `<div class="row paid div-line">낸 보험료 = 월 ${prem.toLocaleString()}원 × ${payYears}년 = <b>${paidMan.toLocaleString()}만원</b></div>`;
   document.getElementById('meta').innerHTML=
     `<span>가입 <b>${state.age}세 ${state.gender}</b> · 납입 <b>${state.payTerm}년</b></span><span><b>${state.sigang==='장기요양'?'장기요양':'뇌혈관질환'}</b> · ${state.plan==='뉴노멀I'?'뉴노멀 I':'뉴노멀 II'}</span><span>관찰 <b>${state.age}세→${state.endAge}세 (${termYears()}년)</b></span>`;
   chartData={y:ysShow,c:csShow};draw();
