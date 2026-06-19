@@ -622,7 +622,8 @@ function draw(targetCanvas, screenWOverride){
   // 40년 = 화면 너비 고정. N <= 40 = 한 화면 (= 스크롤 X) / N > 40 = 가로 스크롤
   // 캡처 모드 = screenWOverride 강제 (= 940 wrapper 너비)
   const screenW = screenWOverride ? screenWOverride : ((window.innerWidth||360) - 20);
-  const yearPx = screenW / 40;
+  // N ≤ 40 = 화면 전체에 fit (= 빈 칸 없음) / N > 40 = 40년 너비 기준 + 초과분 가로 스크롤
+  const yearPx = N <= 40 ? (screenW / N) : (screenW / 40);
   const innerW = N <= 40 ? screenW : Math.round(N * yearPx);
   // chart-inner 너비 강제 (= 캡처 wrapper에는 무관 = 그 때 직접 설정)
   if(!targetCanvas){
