@@ -197,10 +197,21 @@ ageSel.onchange=e=>{
   if(state.endAge<=state.age) state.endAge=Math.min(110, state.age+1);
   buildEndAge();
   applyAgeConstraints();   // 만기/납입기간 옵션 자동 조정
+  setEndBars();             // 1/2/3등급 = 사망 나이 끝에서부터 자동 배치
   clampAmounts();
   clampStarts();
   render();
 };
+
+// 1/2/3등급 = 사망 나이 끝에서부터 = 5/6/7년 자동 배치
+function setEndBars(){
+  const N = termYears();
+  if(N >= 7){
+    state.start[3] = N - 6;   // 3등급 = 사망 7년 전 시작
+    state.start[4] = N - 5;   // 2등급 = 사망 6년 전 시작
+    state.start[5] = N - 4;   // 1등급 = 사망 5년 전 시작
+  }
+}
 
 // 나이 따라 만기/납입기간 옵션 동적 = 데이터 있는 조합만 활성
 function applyAgeConstraints(){
@@ -240,7 +251,7 @@ function buildEndAge(){
   endSel.value = state.endAge;
 }
 buildEndAge();
-endSel.onchange=e=>{state.endAge=+e.target.value;clampStarts();render();};
+endSel.onchange=e=>{state.endAge=+e.target.value;setEndBars();clampStarts();render();};
 // 납입기간 segment (10/20/30년)
 const ptBox=document.getElementById('payTerm');
 ptBox.querySelectorAll('button').forEach(x=>x.onclick=()=>{
@@ -263,6 +274,7 @@ function premAt(key, age){
 function seg(id,key){const b=document.getElementById(id);b.querySelectorAll('button').forEach(x=>x.onclick=()=>{b.querySelectorAll('button').forEach(y=>y.classList.remove('on'));x.classList.add('on');state[key]=x.dataset.v;render();});}
 seg('gender','gender');seg('sigang','sigang');seg('plan','plan');seg('classic','classic');seg('maturity','maturity');
 applyAgeConstraints();   // 초기 가입나이에 따라 만기/납입기간 옵션 자동 조정
+setEndBars();             // 초기 1/2/3등급 = 사망 나이 끝에서부터 자동 배치
 
 // 한도 = 가입 시점 나이 기준 (= 50세 가입 → 평생 64이하, 65세+ 가입 → 평생 65이상)
 function limitOf(g){
