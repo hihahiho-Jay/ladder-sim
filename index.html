@@ -184,6 +184,27 @@ function clampOnset(i,v){
   return Math.max(lo,Math.min(hi,v));
 }
 function fixOnsetOrder(){ for(let i=0;i<GRADES.length;i++){ if(state.active[i]&&state.onset[i]!=null) state.onset[i]=clampOnset(i,state.onset[i]); } }
+let sliderRefs={};
+function syncSliders(){ GRADES.forEach((g,i)=>{ const r=sliderRefs[i]; if(r&&state.onset[i]!=null){ r.inp.value=state.onset[i]; r.age.textContent=state.onset[i]+'세'; } }); }
+// 양방향 연쇄 밀기: 오른쪽(val↑)→위 등급 +1 연쇄 / 왼쪽(val↓)→아래 등급 −1 연쇄. 발생나이 기준(10년·만기 무관). 멈춤=제일위 사망−1 / 제일아래 가입나이
+function setOnset(i,val){
+  const old=state.onset[i];
+  state.onset[i]=Math.max(state.age,Math.min(state.endAge-1,val));
+  if(val>=old){ // 오른쪽 → 위 등급 +1 밀기 (아래 안 끌고감)
+    let prev=state.onset[i];
+    for(let k=i+1;k<GRADES.length;k++){ if(!state.active[k]||state.onset[k]==null)continue; if(state.onset[k]<prev+1)state.onset[k]=prev+1; prev=state.onset[k]; }
+  } else { // 왼쪽 → 아래 등급 −1 밀기 (위 안 끌고감)
+    let prev=state.onset[i];
+    for(let k=i-1;k>=0;k--){ if(!state.active[k]||state.onset[k]==null)continue; if(state.onset[k]>prev-1)state.onset[k]=prev-1; prev=state.onset[k]; }
+  }
+  enforceBounds();
+}
+// 천장(사망−1)·바닥(가입나이)·순서(+1 간격) 강제 — 밀다가 경계 넘는 것 방지
+function enforceBounds(){
+  const act=[]; for(let k=0;k<GRADES.length;k++) if(state.active[k]&&state.onset[k]!=null) act.push(k);
+  for(let j=act.length-1;j>=0;j--){ let mx=state.endAge-1-(act.length-1-j); if(j<act.length-1)mx=Math.min(mx,state.onset[act[j+1]]-1); if(state.onset[act[j]]>mx)state.onset[act[j]]=mx; }
+  for(let j=0;j<act.length;j++){ let mn=state.age+j; if(j>0)mn=Math.max(mn,state.onset[act[j-1]]+1); if(state.onset[act[j]]<mn)state.onset[act[j]]=mn; }
+}
 
 /* ===== 옵션 제약 룰 (백업: 70+ 종신강제 90비활성 / 66+ 종신 30년막힘) ===== */
 function applyAgeConstraints(){
@@ -227,7 +248,7 @@ function buildAmt(){
 
 /* ===== 받는 시나리오 (가입한 등급만) ===== */
 function buildSet(){
-  const box=document.getElementById('setbox'); box.innerHTML='';
+  const box=document.getElementById('setbox'); box.innerHTML=''; sliderRefs={};
   let shown=0;
   GRADES.forEach((g,i)=>{
     if(!state.active[i]) return;            // 가입 안 한 등급은 안 보임
@@ -237,7 +258,7 @@ function buildSet(){
     if(state.onset[i]!=null) tog.style.background=COLORS[i];
     tog.textContent=SHORT[i];
     tog.onclick=()=>{
-      if(state.onset[i]==null){ let def=state.age+2; for(let k=i-1;k>=0;k--){if(state.active[k]&&state.onset[k]!=null){def=state.onset[k]+1;break;}} state.onset[i]=clampOnset(i,def); }
+      if(state.onset[i]==null){ let def=state.age+1; for(let k=i-1;k>=0;k--){if(state.active[k]&&state.onset[k]!=null){def=state.onset[k]+1;break;}} state.onset[i]=Math.max(state.age,Math.min(state.endAge-1,def)); setOnset(i,state.onset[i]); }
       else state.onset[i]=null;
       render();
     };
@@ -246,7 +267,8 @@ function buildSet(){
     inp.value=state.onset[i]!=null?state.onset[i]:state.age; inp.disabled=state.onset[i]==null;
     const age=document.createElement('div'); age.className='gage'+(state.onset[i]==null?' off':'');
     age.textContent=state.onset[i]!=null?state.onset[i]+'세':'안받음';
-    inp.oninput=(e)=>{ const v=clampOnset(i,+e.target.value); state.onset[i]=v; e.target.value=v; age.textContent=v+'세'; updateGraph(); updateSettle(); };
+    sliderRefs[i]={inp,age};
+    inp.oninput=(e)=>{ setOnset(i,+e.target.value); syncSliders(); updateGraph(); updateSettle(); };
     sl.appendChild(inp); sl.appendChild(age);
     row.appendChild(tog); row.appendChild(sl); box.appendChild(row);
   });
