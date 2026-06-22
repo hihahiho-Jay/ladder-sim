@@ -191,8 +191,8 @@ function applyAgeConstraints(){
   const m90=document.getElementById('maturity').querySelector('[data-v="90세"]');
   if(age>=70){ state.maturity='종신'; m90.disabled=true; } else { m90.disabled=false; }
   const p30=document.getElementById('payTerm').querySelector('[data-v="30"]');
-  // 종신 30년 = 크롤 데이터 오류(종신20 복사)로 임시 전체 비활성 (재크롤 후 '&&age>=66'로 원복) / 90세 = 60세↑ 막힘
-  const block30=(state.maturity==='종신')||(state.maturity==='90세'&&age>=60);
+  // 30년납 = 59세까지만 (60세↑ 30년 불가 = 라이나 데이터 30~59, 종신·90세 무관)
+  const block30=age>=60;
   if(block30){ if(state.payTerm===30)state.payTerm=20; p30.disabled=true; } else { p30.disabled=false; }
 }
 
