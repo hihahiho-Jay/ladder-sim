@@ -138,6 +138,7 @@ function limitOf(g){ const band=state.age>=65?'65이상':'64이하'; return LIMI
 function amountOptions(g){ const max=limitOf(g); const o=[]; for(let m=50;m<=max;m+=50)o.push(m); return o; }
 function clampAmounts(){ GRADES.forEach((g,i)=>{ const max=limitOf(g); if(state.amount[i]>max)state.amount[i]=max; if(state.amount[i]<50)state.amount[i]=50; }); }
 function premium(){
+  if(!state.active.some(a=>a)) return 0;   // 가입한 등급이 하나도 없으면 = 아무것도 안 함 = 0원
   const pt=resolvePayTerm(state.age,String(state.payTerm));
   const data=PREM_FULL[`${state.plan}|${state.classic}|${state.gender}|${state.maturity}|${pt}`];
   if(!data)return 0;
