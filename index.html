@@ -112,7 +112,6 @@
   <div class="card settle">
     <h2>정산</h2>
     <div class="row"><span class="k">매달 내는 보험료</span><span class="v" id="s_prem">0원</span></div>
-    <div class="row"><span class="k">총 보험료 (평생 낸 돈)</span><span class="v" id="s_paid">0만원</span></div>
     <div class="row"><span class="k">총 지급액 (사망까지 받는 돈)</span><span class="v" id="s_recv">0만원</span></div>
     <div class="big"><div class="k">총 지급액 − 총 보험료</div><div class="v"><span id="s_profit">0</span><small>만원</small></div></div>
     <div class="ratio" id="s_ratio"></div>
@@ -256,7 +255,6 @@ function updateSettle(){
   const ratio=paidMan>0?(recvMan/paidMan):0;
   document.getElementById('premV').textContent=prem.toLocaleString();
   document.getElementById('s_prem').textContent=prem.toLocaleString()+'원';
-  document.getElementById('s_paid').textContent=paidMan.toLocaleString()+'만원';
   document.getElementById('s_recv').textContent=recvMan.toLocaleString()+'만원';
   document.getElementById('s_profit').textContent=profit.toLocaleString();
   document.getElementById('s_ratio').textContent=ratio>0?`총 보험료의 ${ratio.toFixed(1)}배`:'';
