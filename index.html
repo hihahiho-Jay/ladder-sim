@@ -15,13 +15,12 @@
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;margin-bottom:14px;box-shadow:0 2px 8px rgba(30,45,90,.06)}
   .card h2{font-size:17px;margin:0 0 14px;color:var(--txt);font-weight:800}
 
-  /* 가입 설정 */
-  .row3{display:flex;gap:8px;margin-bottom:12px}
-  .row3>div{flex:1}
+  .row3{display:flex;gap:9px;margin-bottom:9px}
+  .row3>div{flex:1;background:#f4f7fc;border:1px solid #e3e9f4;border-radius:12px;padding:9px 9px 10px}
   label.l{display:block;font-size:12.5px;color:var(--sub);margin-bottom:6px;font-weight:600}
-  select{width:100%;background:var(--inp);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:11px;font-size:16px;font-weight:600}
+  select{width:100%;background:#fff;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:10px;font-size:16px;font-weight:600}
   .seg{display:flex;gap:4px}
-  .seg button{flex:1;background:var(--inp);color:var(--sub);border:1px solid var(--line);border-radius:10px;padding:11px 4px;font-size:15px;font-weight:700}
+  .seg button{flex:1;background:#fff;color:var(--sub);border:1px solid var(--line);border-radius:9px;padding:10px 4px;font-size:15px;font-weight:700}
   .seg button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
   .seg button:disabled{opacity:.4;cursor:not-allowed}
   .amtrow{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line)}
@@ -32,12 +31,10 @@
   .premline{margin-top:15px;text-align:center;font-size:15.5px;color:var(--sub);font-weight:600}
   .premline b{color:var(--accent);font-size:25px}
 
-  /* 받는 시나리오 슬라이더 */
   .grow{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
   .grow:last-child{border-bottom:none}
   .gtog{width:62px;height:40px;border-radius:11px;border:1px solid var(--line);background:var(--inp);
-    color:var(--sub);font-size:15px;font-weight:800;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:6px}
-  .gtog .dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;background:var(--dead)}
+    color:var(--sub);font-size:15px;font-weight:800;flex-shrink:0;display:flex;align-items:center;justify-content:center}
   .gtog.on{color:#fff}
   .gsl{flex:1;display:flex;align-items:center;gap:9px}
   .gsl input{flex:1;height:38px;-webkit-appearance:none;background:transparent}
@@ -46,8 +43,8 @@
   .gsl input:disabled{opacity:.4}
   .gage{width:56px;text-align:right;font-size:19px;font-weight:800}
   .gage.off{color:var(--dead);font-weight:600;font-size:14px}
+  .nograde{color:var(--sub);font-size:14px;text-align:center;padding:8px 0}
 
-  /* 막대그래프 */
   .graph{display:flex;align-items:flex-end;gap:2px;height:168px;margin:16px 0 2px;border-bottom:2px solid var(--line)}
   .gcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
   .gval{font-size:13px;font-weight:800;color:var(--txt);margin-bottom:4px;line-height:1;height:15px;white-space:nowrap}
@@ -60,7 +57,6 @@
   .legend span{display:flex;align-items:center;gap:5px}
   .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 
-  /* 정산 */
   .settle .row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line);font-size:16.5px}
   .settle .row .k{color:var(--sub);font-weight:600}
   .settle .row .v{font-weight:800}
@@ -90,9 +86,9 @@
     <div class="row3">
       <div><label class="l">종류</label><div class="seg" id="sigang"><button data-v="장기요양" class="on">장기요양</button><button data-v="뇌혈관">뇌혈관</button></div></div>
       <div><label class="l">납입</label><div class="seg" id="payTerm"><button data-v="20" class="on">20년</button><button data-v="30">30년</button></div></div>
-      <div><label class="l">만기</label><div class="seg" id="maturity"><button data-v="종신" class="on">종신</button><button data-v="90세">90세</button></div></div>
+      <div><label class="l">만기</label><div class="seg" id="maturity"><button data-v="90세" class="on">90세</button><button data-v="종신">종신</button></div></div>
     </div>
-    <div style="margin-top:6px"><label class="l">등급별 가입금액 (월 보장, 만원)</label><div id="amtbox"></div></div>
+    <div style="margin-top:10px"><div id="amtbox"></div></div>
     <div class="premline">매달 내는 보험료 <b id="premV">0</b>원</div>
   </div>
 
@@ -122,20 +118,25 @@
 <script src="sim_data.js"></script>
 <script>
 const PREM_FULL=window.PREM_FULL, LIMITS=window.LIMITS;
-const GRADES=['인지지원등급','5등급','4등급','3등급','2등급','1등급'];
+const GRADES=['인지지원등급','5등급','4등급','3등급','2등급','1등급'];        // 약→강
 const SHORT =['인지','5급','4급','3급','2급','1급'];
-const COLORS=['#ff5b5b','#ff9f43','#f5c400','#34c759','#2f6df0','#9a5cf0']; // 인지~1급 = 빨주노초파보
+const COLORS=['#ff5b5b','#ff9f43','#f5c400','#34c759','#2f6df0','#9a5cf0'];   // 인지~1급 = 빨주노초파보
 const DURATION={'인지지원등급':10,'5등급':10,'4등급':10,'3등급':999,'2등급':999,'1등급':999};
 const DEFAULT_AMOUNTS=[50,100,150,250,500,500];
 
-const state={age:65,gender:'남',sigang:'장기요양',plan:'뉴노멀I',classic:'일반',maturity:'종신',payTerm:20,endAge:90,
-  amount:[...DEFAULT_AMOUNTS], onset:[65,null,70,null,75,null]};
+const state={age:65,gender:'남',sigang:'장기요양',plan:'뉴노멀I',classic:'일반',maturity:'90세',payTerm:20,endAge:90,
+  active:[true,true,true,true,true,true], amount:[...DEFAULT_AMOUNTS], onset:[65,null,70,null,75,null]};
 
-/* ===== 보험료 (검증 로직 그대로) ===== */
-function resolvePayTerm(age,pt){ if(age>=71)return'종신'; if(age>=70)return pt==='30'?'20':pt; return pt==='10'?'20':pt; }
+/* ===== 보험료 (백업 로직 그대로 — 가입한 등급만 합산) ===== */
+function resolvePayTerm(age,pt){
+  // 90세 만기엔 종신납 데이터가 없으므로 종신납 전환은 종신 만기일 때만
+  if(age>=71) return state.maturity==='종신' ? '종신' : '20';
+  if(age>=70) return pt==='30'?'20':pt;
+  return pt==='10'?'20':pt;
+}
 function limitOf(g){ const band=state.age>=65?'65이상':'64이하'; return LIMITS[state.plan][g][band]; }
-function amountOptions(g){ const lim=limitOf(g); const o=[]; for(let m=50;m<=lim;m+=50)o.push(m); return o; }
-function clampAmounts(){ GRADES.forEach((g,i)=>{ const lim=limitOf(g); if(state.amount[i]>lim)state.amount[i]=lim; }); }
+function amountOptions(g){ const max=limitOf(g); const o=[]; for(let m=50;m<=max;m+=50)o.push(m); return o; }
+function clampAmounts(){ GRADES.forEach((g,i)=>{ const max=limitOf(g); if(state.amount[i]>max)state.amount[i]=max; if(state.amount[i]<50)state.amount[i]=50; }); }
 function premium(){
   const pt=resolvePayTerm(state.age,String(state.payTerm));
   const data=PREM_FULL[`${state.plan}|${state.classic}|${state.gender}|${state.maturity}|${pt}`];
@@ -143,6 +144,7 @@ function premium(){
   const age=String(state.age); let sum=0;
   if(data['주계약']&&data['주계약'][age])sum+=data['주계약'][age][1];
   GRADES.forEach((g,i)=>{
+    if(!state.active[i])return;                       // 가입한 등급만
     const gs=g.replace('등급',''); const tbl=data[`${state.sigang}|${gs}`];
     const row=tbl&&tbl[age];
     if(row){const[ent,prm]=row; sum+=Math.round(prm*state.amount[i]/ent);}
@@ -151,32 +153,46 @@ function premium(){
 }
 function payYears(){ const pt=resolvePayTerm(state.age,String(state.payTerm)); return pt==='종신'?(state.endAge-state.age+1):(+pt); }
 
-/* ===== 받는 돈 (onset) ===== */
+/* ===== 가입 연계 룰 (백업 setGradeAmount 그대로) =====
+   가입 = i + 위(강한) 자동 활성 / 제외 = i + 아래(약한) 자동 비활성 */
+function setGradeAmount(i, amt){
+  if(amt===0){
+    for(let k=0;k<=i;k++){ state.active[k]=false; state.amount[k]=DEFAULT_AMOUNTS[k]; state.onset[k]=null; }
+  } else {
+    state.active[i]=true; state.amount[i]=amt;
+    for(let k=i+1;k<GRADES.length;k++){ if(!state.active[k]){ state.active[k]=true; state.amount[k]=DEFAULT_AMOUNTS[k]; } }
+  }
+  clampAmounts(); fixOnsetOrder(); render();
+}
+
+/* ===== 받는 돈 (가입+발생) ===== */
 function durOf(i){ return DURATION[GRADES[i]]!==999 ? 10 : (state.endAge-state.onset[i]+1); }
-function alive(i,age){ return state.onset[i]!=null && age>=state.onset[i] && age<state.onset[i]+durOf(i); }
+function alive(i,age){ return state.active[i] && state.onset[i]!=null && age>=state.onset[i] && age<state.onset[i]+durOf(i); }
 function monthlyOf(i,age){
   if(!alive(i,age))return 0;
   const base=state.amount[i]*0.10;
   if(GRADES[i]==='1등급')return base;
-  const upper=GRADES.slice(i+1).some((g,j)=> state.onset[i+1+j]!=null && state.onset[i+1+j]<=age);
+  const upper=GRADES.slice(i+1).some((g,j)=> state.active[i+1+j] && state.onset[i+1+j]!=null && state.onset[i+1+j]<=age);
   return upper?base*2:base;
 }
 function totalAt(age){let s=0;GRADES.forEach((g,i)=>s+=monthlyOf(i,age));return s;}
 function clampOnset(i,v){
   let lo=state.age,hi=state.endAge;
-  for(let k=i-1;k>=0;k--){if(state.onset[k]!=null){lo=state.onset[k]+1;break;}}
-  for(let k=i+1;k<GRADES.length;k++){if(state.onset[k]!=null){hi=state.onset[k]-1;break;}}
+  for(let k=i-1;k>=0;k--){if(state.active[k]&&state.onset[k]!=null){lo=state.onset[k]+1;break;}}
+  for(let k=i+1;k<GRADES.length;k++){if(state.active[k]&&state.onset[k]!=null){hi=state.onset[k]-1;break;}}
   return Math.max(lo,Math.min(hi,v));
 }
+function fixOnsetOrder(){ for(let i=0;i<GRADES.length;i++){ if(state.active[i]&&state.onset[i]!=null) state.onset[i]=clampOnset(i,state.onset[i]); } }
 
-/* ===== 옵션 제약 ===== */
+/* ===== 옵션 제약 룰 (백업: 70+ 종신강제 90비활성 / 66+ 종신 30년막힘) ===== */
 function applyAgeConstraints(){
   const age=state.age;
-  const matBox=document.getElementById('maturity'), m90=matBox.querySelector('[data-v="90세"]');
-  if(age>=70){ state.maturity='종신'; m90.disabled=true; } else m90.disabled=false;
-  const ptBox=document.getElementById('payTerm'), p30=ptBox.querySelector('[data-v="30"]');
-  const block30=(state.maturity==='종신'&&age>=66);
-  if(block30){ if(state.payTerm===30)state.payTerm=20; p30.disabled=true; } else p30.disabled=false;
+  const m90=document.getElementById('maturity').querySelector('[data-v="90세"]');
+  if(age>=70){ state.maturity='종신'; m90.disabled=true; } else { m90.disabled=false; }
+  const p30=document.getElementById('payTerm').querySelector('[data-v="30"]');
+  // 종신 30년 = 크롤 데이터 오류(종신20 복사)로 임시 전체 비활성 (재크롤 후 '&&age>=66'로 원복) / 90세 = 60세↑ 막힘
+  const block30=(state.maturity==='종신')||(state.maturity==='90세'&&age>=60);
+  if(block30){ if(state.payTerm===30)state.payTerm=20; p30.disabled=true; } else { p30.disabled=false; }
 }
 
 /* ===== 가입 설정 ===== */
@@ -188,7 +204,6 @@ ageSel.onchange=e=>{ state.age=+e.target.value; if(state.endAge<=state.age)state
 endSel.onchange=e=>{ state.endAge=+e.target.value; state.onset=state.onset.map(v=>v==null?null:Math.min(state.endAge,v)); fixOnsetOrder(); render(); };
 function seg(id,key){const b=document.getElementById(id);b.querySelectorAll('button').forEach(x=>x.onclick=()=>{ if(x.disabled)return; state[key]=isNaN(+x.dataset.v)?x.dataset.v:+x.dataset.v;applyAgeConstraints();clampAmounts();render();});}
 seg('gender','gender');seg('sigang','sigang');seg('plan','plan');seg('classic','classic');seg('maturity','maturity');seg('payTerm','payTerm');
-function fixOnsetOrder(){ for(let i=0;i<GRADES.length;i++){ if(state.onset[i]!=null) state.onset[i]=clampOnset(i,state.onset[i]); } }
 
 function buildAmt(){
   const box=document.getElementById('amtbox'); box.innerHTML='';
@@ -196,23 +211,32 @@ function buildAmt(){
     const row=document.createElement('div'); row.className='amtrow';
     const nm=document.createElement('div'); nm.className='nm'; nm.innerHTML=`<i style="background:${COLORS[i]}"></i>${SHORT[i]}`;
     const sel=document.createElement('select');
-    amountOptions(g).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m+'만';sel.appendChild(o);});
-    sel.value=state.amount[i];
-    sel.onchange=e=>{ state.amount[i]=+e.target.value; render(); };
+    if(state.active[i]){
+      const ox=document.createElement('option'); ox.value='0'; ox.textContent='✕ 제외'; sel.appendChild(ox);
+      amountOptions(g).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m+'만';sel.appendChild(o);});
+      sel.value=state.amount[i];
+    } else {
+      const p=document.createElement('option'); p.value=''; p.textContent='가입 안함'; p.disabled=true; p.selected=true; sel.appendChild(p);
+      amountOptions(g).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m+'만';sel.appendChild(o);});
+    }
+    sel.onchange=e=>{ if(e.target.value==='')return; setGradeAmount(i,+e.target.value); };
     row.appendChild(nm); row.appendChild(sel); box.appendChild(row);
   });
 }
 
-/* ===== 받는 시나리오 슬라이더 ===== */
+/* ===== 받는 시나리오 (가입한 등급만) ===== */
 function buildSet(){
   const box=document.getElementById('setbox'); box.innerHTML='';
+  let shown=0;
   GRADES.forEach((g,i)=>{
+    if(!state.active[i]) return;            // 가입 안 한 등급은 안 보임
+    shown++;
     const row=document.createElement('div'); row.className='grow';
     const tog=document.createElement('button'); tog.className='gtog'+(state.onset[i]!=null?' on':'');
     if(state.onset[i]!=null) tog.style.background=COLORS[i];
     tog.textContent=SHORT[i];
     tog.onclick=()=>{
-      if(state.onset[i]==null){ let def=state.age+2; for(let k=i-1;k>=0;k--){if(state.onset[k]!=null){def=state.onset[k]+1;break;}} state.onset[i]=clampOnset(i,def); }
+      if(state.onset[i]==null){ let def=state.age+2; for(let k=i-1;k>=0;k--){if(state.active[k]&&state.onset[k]!=null){def=state.onset[k]+1;break;}} state.onset[i]=clampOnset(i,def); }
       else state.onset[i]=null;
       render();
     };
@@ -225,10 +249,15 @@ function buildSet(){
     sl.appendChild(inp); sl.appendChild(age);
     row.appendChild(tog); row.appendChild(sl); box.appendChild(row);
   });
+  if(shown===0){ const d=document.createElement('div'); d.className='nograde'; d.textContent='가입한 등급이 없어요 — 위 가입 설정에서 등급을 선택하세요.'; box.appendChild(d); }
 }
 
 /* ===== 막대그래프 ===== */
-function ages(){ const a=[]; for(let x=state.age;x<=state.endAge;x++)a.push(x); return a; }
+function ages(){
+  const on=GRADES.map((g,i)=> (state.active[i]&&state.onset[i]!=null)?state.onset[i]:null).filter(v=>v!=null);
+  const start=on.length?Math.min(...on):state.age;   // 받기 시작하는 나이부터
+  const a=[]; for(let x=start;x<=state.endAge;x++)a.push(x); return a;
+}
 function updateGraph(){
   const A=ages(); const vals=A.map(a=>totalAt(a));
   const peak=Math.max(...vals,0); const peakAge=A[vals.indexOf(peak)];
