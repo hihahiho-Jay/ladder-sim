@@ -65,6 +65,11 @@
   .settle .big .v{font-size:44px;font-weight:900;color:var(--profit);line-height:1.12;margin-top:2px}
   .settle .big .v small{font-size:19px}
   .settle .ratio{text-align:center;font-size:16px;color:var(--gold);font-weight:800;margin-top:4px}
+  .waived-detail{padding:2px 0 6px 14px}
+  .waived-detail .wdrow{font-size:13px;color:var(--sub);padding:5px 0;line-height:1.5;border-bottom:1px dashed var(--line)}
+  .waived-detail .wdrow:last-child{border-bottom:none}
+  .waived-detail .wamt{color:var(--gold);float:right}
+  .waived-detail .wdnone{font-size:12.5px;color:var(--sub);padding:4px 0;line-height:1.4}
   .warn{font-size:12px;color:var(--sub);margin-top:15px;line-height:1.6}
 </style>
 </head>
@@ -109,7 +114,8 @@
     <h2>정산</h2>
     <div class="row"><span class="k">매달 내는 보험료</span><span class="v" id="s_prem">0원</span></div>
     <div class="row"><span class="k">총 낸 보험료 <small style="color:var(--sub);font-weight:600">(납입면제 반영)</small></span><span class="v" id="s_paid">0만원</span></div>
-    <div class="row"><span class="k">└ 납입면제로 안 낸 돈</span><span class="v" id="s_waived" style="color:var(--gold)">0만원</span></div>
+    <div class="row"><span class="k">└ 납입면제로 안 낸 돈 <small style="color:var(--sub);font-weight:600">(받기 시작하면 그 보험료 끝)</small></span><span class="v" id="s_waived" style="color:var(--gold)">0만원</span></div>
+    <div id="s_waived_detail" class="waived-detail"></div>
     <div class="row"><span class="k">총 지급액</span><span class="v" id="s_recv">0만원</span></div>
     <div class="big"><div class="k">총 지급액 − 총 보험료</div><div class="v"><span id="s_profit">0</span><small>만원</small></div></div>
     <div class="ratio" id="s_ratio"></div>
@@ -172,16 +178,19 @@ function premiumParts(){
 // 납입면제 반영: 생활자금특약은 자기 등급 발생(받기 시작) 나이부터 보험료 면제 (약관 제7조②). 주계약은 면제 제외(보수적)
 function paidParts(){
   const {main, grades}=premiumParts(); const py=payYears();
-  let paidFull=main*py*12, paidReal=main*py*12;
+  let paidFull=main*py*12, paidReal=main*py*12;   // 주계약은 면제 제외 (주계약 납입면제=80%이상 장해 등 조건이 까다로워 현실성 낮음)
+  const detail=[];
   GRADES.forEach((g,i)=>{
     if(!state.active[i])return;
     paidFull+=grades[i]*py*12;
     if(state.onset[i]!=null){
-      const yrs=Math.max(0, Math.min(py, state.onset[i]-state.age));   // 발생 전까지만 납입
-      paidReal+=grades[i]*yrs*12;
+      const paidYrs=Math.max(0, Math.min(py, state.onset[i]-state.age));   // 발생 전까지만 납입
+      paidReal+=grades[i]*paidYrs*12;
+      const waivedYrs=py-paidYrs;
+      if(waivedYrs>0 && grades[i]>0) detail.push({i, onset:state.onset[i], yrs:waivedYrs, amt:grades[i]*waivedYrs*12});
     } else { paidReal+=grades[i]*py*12; }
   });
-  return {paidReal, paidFull, waived:paidFull-paidReal};
+  return {paidReal, paidFull, waived:paidFull-paidReal, detail};
 }
 
 /* ===== 가입 연계 룰 (백업 setGradeAmount 그대로) =====
@@ -332,7 +341,7 @@ function updateGraph(){
 /* ===== 정산 ===== */
 function updateSettle(){
   const prem=premium();
-  const {paidReal, waived}=paidParts();
+  const {paidReal, waived, detail}=paidParts();
   const paidMan=Math.round(paidReal/10000);
   const waivedMan=Math.round(waived/10000);
   const recvMan=Math.round(ages().reduce((s,a)=>s+totalAt(a)*12,0));
@@ -342,6 +351,10 @@ function updateSettle(){
   document.getElementById('s_prem').textContent=prem.toLocaleString()+'원';
   document.getElementById('s_paid').textContent=paidMan.toLocaleString()+'만원';
   document.getElementById('s_waived').textContent=waivedMan>0?('-'+waivedMan.toLocaleString()+'만원'):'0만원';
+  const dEl=document.getElementById('s_waived_detail');
+  if(dEl) dEl.innerHTML = detail.length
+    ? detail.map(d=>`<div class="wdrow"><b style="color:${COLORS[d.i]}">${SHORT[d.i]}</b> <b>${d.onset}세</b>에 받기 시작 → 이후 <b>${d.yrs}년치</b> 보험료 면제 <b class="wamt">${(d.amt/10000).toFixed(1)}만원</b></div>`).join('')
+    : '<div class="wdnone">받기 시작 나이가 납입기간(완납) 이후라 면제 없음 — 나이를 당기면 면제가 생겨요</div>';
   document.getElementById('s_recv').textContent=recvMan.toLocaleString()+'만원';
   document.getElementById('s_profit').textContent=profit.toLocaleString();
   document.getElementById('s_ratio').textContent=ratio>0?`낸 돈의 ${ratio.toFixed(1)}배`:'';
