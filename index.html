@@ -108,7 +108,8 @@
   <div class="card settle">
     <h2>정산</h2>
     <div class="row"><span class="k">매달 내는 보험료</span><span class="v" id="s_prem">0원</span></div>
-    <div class="row"><span class="k">총 보험료</span><span class="v" id="s_paid">0만원</span></div>
+    <div class="row"><span class="k">총 낸 보험료 <small style="color:var(--sub);font-weight:600">(납입면제 반영)</small></span><span class="v" id="s_paid">0만원</span></div>
+    <div class="row"><span class="k">└ 납입면제로 안 낸 돈</span><span class="v" id="s_waived" style="color:var(--gold)">0만원</span></div>
     <div class="row"><span class="k">총 지급액</span><span class="v" id="s_recv">0만원</span></div>
     <div class="big"><div class="k">총 지급액 − 총 보험료</div><div class="v"><span id="s_profit">0</span><small>만원</small></div></div>
     <div class="ratio" id="s_ratio"></div>
@@ -153,6 +154,35 @@ function premium(){
   return Math.round(sum);
 }
 function payYears(){ const pt=resolvePayTerm(state.age,String(state.payTerm)); return pt==='종신'?(state.endAge-state.age+1):(+pt); }
+// 주계약/등급별 월보험료 분리 (납입면제 계산용)
+function premiumParts(){
+  const pt=resolvePayTerm(state.age,String(state.payTerm));
+  const data=PREM_FULL[`${state.plan}|${state.classic}|${state.gender}|${state.maturity}|${pt}`];
+  const age=String(state.age); let main=0; const grades=[0,0,0,0,0,0];
+  if(state.active.some(a=>a)&&data){
+    if(data['주계약']&&data['주계약'][age])main=data['주계약'][age][1];
+    GRADES.forEach((g,i)=>{
+      if(!state.active[i])return;
+      const gs=g.replace('등급',''); const tbl=data[`${state.sigang}|${gs}`]; const row=tbl&&tbl[age];
+      if(row){const[ent,prm]=row; grades[i]=Math.round(prm*state.amount[i]/ent);}
+    });
+  }
+  return {main, grades};
+}
+// 납입면제 반영: 생활자금특약은 자기 등급 발생(받기 시작) 나이부터 보험료 면제 (약관 제7조②). 주계약은 면제 제외(보수적)
+function paidParts(){
+  const {main, grades}=premiumParts(); const py=payYears();
+  let paidFull=main*py*12, paidReal=main*py*12;
+  GRADES.forEach((g,i)=>{
+    if(!state.active[i])return;
+    paidFull+=grades[i]*py*12;
+    if(state.onset[i]!=null){
+      const yrs=Math.max(0, Math.min(py, state.onset[i]-state.age));   // 발생 전까지만 납입
+      paidReal+=grades[i]*yrs*12;
+    } else { paidReal+=grades[i]*py*12; }
+  });
+  return {paidReal, paidFull, waived:paidFull-paidReal};
+}
 
 /* ===== 가입 연계 룰 (백업 setGradeAmount 그대로) =====
    가입 = i + 위(강한) 자동 활성 / 제외 = i + 아래(약한) 자동 비활성 */
@@ -302,16 +332,19 @@ function updateGraph(){
 /* ===== 정산 ===== */
 function updateSettle(){
   const prem=premium();
-  const paidMan=Math.round(prem*payYears()*12/10000);
+  const {paidReal, waived}=paidParts();
+  const paidMan=Math.round(paidReal/10000);
+  const waivedMan=Math.round(waived/10000);
   const recvMan=Math.round(ages().reduce((s,a)=>s+totalAt(a)*12,0));
   const profit=recvMan-paidMan;
   const ratio=paidMan>0?(recvMan/paidMan):0;
   document.getElementById('premV').textContent=prem.toLocaleString();
   document.getElementById('s_prem').textContent=prem.toLocaleString()+'원';
   document.getElementById('s_paid').textContent=paidMan.toLocaleString()+'만원';
+  document.getElementById('s_waived').textContent=waivedMan>0?('-'+waivedMan.toLocaleString()+'만원'):'0만원';
   document.getElementById('s_recv').textContent=recvMan.toLocaleString()+'만원';
   document.getElementById('s_profit').textContent=profit.toLocaleString();
-  document.getElementById('s_ratio').textContent=ratio>0?`총 보험료의 ${ratio.toFixed(1)}배`:'';
+  document.getElementById('s_ratio').textContent=ratio>0?`낸 돈의 ${ratio.toFixed(1)}배`:'';
 }
 
 function buildLegend(){ const L=document.getElementById('legend'); L.innerHTML=''; GRADES.forEach((g,i)=>{const s=document.createElement('span');s.innerHTML=`<i style="background:${COLORS[i]}"></i>${SHORT[i]}`;L.appendChild(s);}); }
