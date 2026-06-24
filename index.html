@@ -16,6 +16,9 @@
   .card h2{font-size:17px;margin:0 0 14px;color:var(--txt);font-weight:800}
 
   .row3{display:flex;gap:9px;margin-bottom:9px}
+  .optgroup{border:1px solid var(--line);border-radius:13px;padding:11px 12px;margin-bottom:12px;background:#f8fafd}
+  .optgroup .row3{margin-bottom:0}
+  .grouplabel{font-size:13px;font-weight:800;color:var(--sub);margin-bottom:9px}
   .row3>div{flex:1;background:#f4f7fc;border:1px solid #e3e9f4;border-radius:12px;padding:9px 9px 10px}
   label.l{display:block;font-size:12.5px;color:var(--sub);margin-bottom:6px;font-weight:600}
   select{width:100%;background:#fff;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:10px;font-size:16px;font-weight:600}
@@ -78,20 +81,29 @@
   <div class="sub">건강이 나빠져도 — 매달 받는 돈은 늘어납니다</div>
 
   <div class="card" id="gear">
-    <h2>가입 설정 (상품 · 금액 · 보험료)</h2>
-    <div class="row3">
-      <div><label class="l">가입 나이</label><select id="age"></select></div>
-      <div><label class="l">사망(끝) 나이</label><select id="endAge"></select></div>
-      <div><label class="l">성별</label><div class="seg" id="gender"><button data-v="남" class="on">남</button><button data-v="여">여</button></div></div>
+    <h2>가입 설정</h2>
+    <div class="optgroup">
+      <div class="grouplabel">고객 정보</div>
+      <div class="row3">
+        <div><label class="l">가입 나이</label><select id="age"></select></div>
+        <div><label class="l">사망(끝) 나이</label><select id="endAge"></select></div>
+        <div><label class="l">성별</label><div class="seg" id="gender"><button data-v="남" class="on">남</button><button data-v="여">여</button></div></div>
+      </div>
     </div>
-    <div class="row3">
-      <div><label class="l">상품</label><div class="seg" id="plan"><button data-v="뉴노멀I" class="on">뉴노멀 I</button><button data-v="뉴노멀II">뉴노멀 II</button></div></div>
-      <div><label class="l">유형</label><div class="seg" id="classic"><button data-v="일반" class="on">일반</button><button data-v="클래식">클래식</button></div></div>
+    <div class="optgroup">
+      <div class="grouplabel">상품 정보</div>
+      <div class="row3">
+        <div><label class="l">상품</label><div class="seg" id="plan"><button data-v="뉴노멀I" class="on">뉴 1</button><button data-v="뉴노멀II">뉴 2</button></div></div>
+        <div><label class="l">유형</label><div class="seg" id="classic"><button data-v="일반" class="on">일반</button><button data-v="클래식">클래식</button></div></div>
+        <div><label class="l">종류</label><div class="seg" id="sigang"><button data-v="장기요양" class="on">치매</button><button data-v="뇌혈관">뇌혈관</button></div></div>
+      </div>
     </div>
-    <div class="row3">
-      <div><label class="l">종류</label><div class="seg" id="sigang"><button data-v="장기요양" class="on">장기요양</button><button data-v="뇌혈관">뇌혈관</button></div></div>
-      <div><label class="l">납입</label><div class="seg" id="payTerm"><button data-v="20" class="on">20년</button><button data-v="30">30년</button></div></div>
-      <div><label class="l">만기</label><div class="seg" id="maturity"><button data-v="90세" class="on">90세</button><button data-v="종신">종신</button></div></div>
+    <div class="optgroup">
+      <div class="grouplabel">상품 기간</div>
+      <div class="row3">
+        <div><label class="l">납입</label><div class="seg" id="payTerm"><button data-v="20" class="on">20년</button><button data-v="30">30년</button></div></div>
+        <div><label class="l">만기</label><div class="seg" id="maturity"><button data-v="90세" class="on">90세</button><button data-v="종신">종신</button></div></div>
+      </div>
     </div>
     <div style="margin-top:10px"><div id="amtbox"></div></div>
     <div class="premline">매달 내는 보험료 <b id="premV">0</b>원</div>
