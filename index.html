@@ -28,6 +28,9 @@
   .seg button:disabled{opacity:.4;cursor:not-allowed}
   .amtrow{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line)}
   .amtrow:last-child{border-bottom:none}
+  .amtrow.off{opacity:.5}
+  .amtrow.off .nm{color:var(--sub)}
+  .amtrow.off .nm i{filter:grayscale(100%)}
   .amtrow .nm{width:70px;font-size:15.5px;font-weight:700;display:flex;align-items:center;gap:6px}
   .amtrow .nm i{width:11px;height:11px;border-radius:50%;display:inline-block}
   .amtrow select{flex:1}
@@ -282,7 +285,7 @@ seg('gender','gender');seg('sigang','sigang');seg('plan','plan');seg('classic','
 function buildAmt(){
   const box=document.getElementById('amtbox'); box.innerHTML='';
   GRADES.forEach((g,i)=>{
-    const row=document.createElement('div'); row.className='amtrow';
+    const row=document.createElement('div'); row.className='amtrow'+(state.active[i]?'':' off');
     const nm=document.createElement('div'); nm.className='nm'; nm.innerHTML=`<i style="background:${COLORS[i]}"></i>${SHORT[i]}`;
     const sel=document.createElement('select');
     if(state.active[i]){
