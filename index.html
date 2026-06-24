@@ -112,10 +112,11 @@
 
   <div class="card settle">
     <h2>정산</h2>
-    <div class="row"><span class="k">매달 내는 보험료</span><span class="v" id="s_prem">0원</span></div>
-    <div class="row"><span class="k">총 낸 보험료 <small style="color:var(--sub);font-weight:600">(납입면제 반영)</small></span><span class="v" id="s_paid">0만원</span></div>
-    <div class="row"><span class="k">└ 납입면제로 안 낸 돈 <small style="color:var(--sub);font-weight:600">(받기 시작하면 그 보험료 끝)</small></span><span class="v" id="s_waived" style="color:var(--gold)">0만원</span></div>
+    <div class="row"><span class="k">월 납입 보험료</span><span class="v" id="s_prem">0원</span></div>
+    <div class="row"><span class="k">총 납입 보험료 <small style="color:var(--sub);font-weight:600">(납입면제 반영 전)</small></span><span class="v" id="s_paidfull">0만원</span></div>
+    <div class="row"><span class="k">납입면제 금액 <small style="color:var(--sub);font-weight:600">(받기 시작하면 그 보험료 끝)</small></span><span class="v" id="s_waived" style="color:var(--gold)">0만원</span></div>
     <div id="s_waived_detail" class="waived-detail"></div>
+    <div class="row"><span class="k">총 납입 보험료 <small style="color:var(--sub);font-weight:600">(납입면제 반영 후)</small></span><span class="v" id="s_paid">0만원</span></div>
     <div class="row"><span class="k">총 지급액</span><span class="v" id="s_recv">0만원</span></div>
     <div class="big"><div class="k">총 지급액 − 총 보험료</div><div class="v"><span id="s_profit">0</span><small>만원</small></div></div>
     <div class="ratio" id="s_ratio"></div>
@@ -341,19 +342,21 @@ function updateGraph(){
 /* ===== 정산 ===== */
 function updateSettle(){
   const prem=premium();
-  const {paidReal, waived, detail}=paidParts();
+  const {paidReal, paidFull, waived, detail}=paidParts();
   const paidMan=Math.round(paidReal/10000);
+  const paidFullMan=Math.round(paidFull/10000);
   const waivedMan=Math.round(waived/10000);
   const recvMan=Math.round(ages().reduce((s,a)=>s+totalAt(a)*12,0));
   const profit=recvMan-paidMan;
   const ratio=paidMan>0?(recvMan/paidMan):0;
   document.getElementById('premV').textContent=prem.toLocaleString();
   document.getElementById('s_prem').textContent=prem.toLocaleString()+'원';
+  document.getElementById('s_paidfull').textContent=paidFullMan.toLocaleString()+'만원';
   document.getElementById('s_paid').textContent=paidMan.toLocaleString()+'만원';
   document.getElementById('s_waived').textContent=waivedMan>0?('-'+waivedMan.toLocaleString()+'만원'):'0만원';
   const dEl=document.getElementById('s_waived_detail');
   if(dEl) dEl.innerHTML = detail.length
-    ? detail.map(d=>`<div class="wdrow"><b style="color:${COLORS[d.i]}">${SHORT[d.i]}</b> <b>${d.onset}세</b>에 받기 시작 → 이후 <b>${d.yrs}년치</b> 보험료 면제 <b class="wamt">${(d.amt/10000).toFixed(1)}만원</b></div>`).join('')
+    ? detail.map(d=>`<div class="wdrow"><b style="color:${COLORS[d.i]}">${SHORT[d.i]}</b>: <b>${d.onset}세</b>부터 면제 → <b>${d.yrs}년치</b> 면제 <b class="wamt">${(d.amt/10000).toFixed(1)}만원</b></div>`).join('')
     : '<div class="wdnone">받기 시작 나이가 납입기간(완납) 이후라 면제 없음 — 나이를 당기면 면제가 생겨요</div>';
   document.getElementById('s_recv').textContent=recvMan.toLocaleString()+'만원';
   document.getElementById('s_profit').textContent=profit.toLocaleString();
