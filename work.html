@@ -24,7 +24,8 @@
   .cb-span{position:absolute;left:0;border-radius:5px;opacity:.14;pointer-events:none}
   .cb-x{color:var(--peak);font-weight:800;cursor:pointer;margin-left:8px;font-size:18px}
   .cb-handle{display:inline-block;font-size:16px;font-weight:800;color:#fff;background:var(--accent);padding:9px 16px;border-radius:10px;cursor:grab;touch-action:none;user-select:none;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.25);margin-left:8px;vertical-align:middle}
-  .cb-info{font-size:15.5px;font-weight:700;white-space:nowrap;background:#fff;padding:7px 10px;border-radius:9px;border:2px solid var(--line)}
+  .cb-info{font-size:13.5px;font-weight:700;white-space:nowrap;background:#fff;padding:4px 8px;border-radius:8px;border:2px solid var(--line);cursor:grab;touch-action:none}
+  .cb-info:active{cursor:grabbing}
   .cb-dot{width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.35);cursor:grab;touch-action:none;flex:none}
   .cb-handle:active{cursor:grabbing;background:var(--peak)}
   .cb-empty{text-align:center;color:var(--sub);padding:140px 10px;font-size:14px}
@@ -490,12 +491,11 @@ function renderCombo(){
   // 마커 — 점(등급색) + 지그재그 박스 + 큰 핸들
   comboSeq.forEach((it,i)=>{
     const m=document.createElement('div'); m.className='cb-mark'; m.style.top=y(it.age)+'px';
-    const zig=(i%2)?72:8;
-    const ten=(it.g<=2)?'10년':'종신';
+    const zig=(i%2)?52:6;
     m.innerHTML=`<span class="cb-dot" style="background:${GCOL[it.g]}"></span>`+
       `<span class="cb-info" style="margin-left:${zig}px;border-color:${GCOL[it.g]}">`+
-        `<b style="color:${GCOL[it.g]}">${i+1}.${SHORT[it.g]}</b> <b>${it.age}세</b> <small>(${ten})</small>`+
-        `<span class="cb-handle">↕</span><span class="cb-x">✕</span>`+
+        `<b style="color:${GCOL[it.g]}">${i+1}.${SHORT[it.g]}</b> ${it.age}세`+
+        `<span class="cb-x">✕</span>`+
       `</span>`;
     ax.appendChild(m);
     m.querySelector('.cb-x').onclick=e=>{ e.stopPropagation(); comboSeq.splice(i,1); renderCombo(); };
@@ -513,7 +513,7 @@ function renderCombo(){
       const up=()=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up); renderCombo(); };
       document.addEventListener('pointermove',move); document.addEventListener('pointerup',up);
     };
-    m.querySelector('.cb-handle').addEventListener('pointerdown',startDrag);
+    m.querySelector('.cb-info').addEventListener('pointerdown',e=>{ if(e.target.classList.contains('cb-x'))return; startDrag(e); });
     m.querySelector('.cb-dot').addEventListener('pointerdown',startDrag);
   });
 }
