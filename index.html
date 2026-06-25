@@ -202,7 +202,7 @@
 const PREM_FULL=window.PREM_FULL, LIMITS=window.LIMITS;
 const GRADES=['인지지원등급','5등급','4등급','3등급','2등급','1등급'];        // 약→강
 const SHORT =['인지','5급','4급','3급','2급','1급'];
-const COLORS=['#ff5b5b','#ff9f43','#f5c400','#34c759','#2f6df0','#9a5cf0'];   // 인지~1급 = 빨주노초파보
+const COLORS=['#a855f7','#3b82f6','#10b981','#eab308','#f97316','#ef4444'];   // 인지~1급 무지개 (마커 GCOL과 통일)
 const DURATION={'인지지원등급':10,'5등급':10,'4등급':10,'3등급':999,'2등급':999,'1등급':999};
 const DEFAULT_AMOUNTS=[50,100,150,250,500,500];
 
@@ -407,7 +407,16 @@ function updateGraph(){
     const prev=idx>0?vals[idx-1]:0;
     const lab=document.createElement('div'); lab.className='gval'; lab.textContent=(v>0&&v!==prev)?(Math.round(v*10)/10):'';
     const bar=document.createElement('div'); bar.className='gb'; bar.style.height=(peak>0?Math.max(2,(v/peak)*100):2)+'%';
-    if(v>0) GRADES.forEach((gg,i)=>{ if(!alive(i,a))return; const s=document.createElement('div');s.className='seg2';s.style.background=COLORS[i];bar.appendChild(s); });
+    if(v>0){
+      if(isComboTab()){
+        [...new Set(comboSeq.map(c=>c.g))].sort((x,y)=>x-y).forEach(gi=>{
+          const m=comboSeq.filter(c=>c.g===gi).reduce((acc,c)=>acc+comboMonthlyOf(c,a),0);
+          if(m>0){ const s=document.createElement('div');s.className='seg2';s.style.background=COLORS[gi];bar.appendChild(s); }
+        });
+      } else {
+        GRADES.forEach((gg,i)=>{ if(!alive(i,a))return; const s=document.createElement('div');s.className='seg2';s.style.background=COLORS[i];bar.appendChild(s); });
+      }
+    }
     col.appendChild(lab); col.appendChild(bar); g.appendChild(col);
   });
   const xax=document.getElementById('xaxis'); xax.innerHTML='';
