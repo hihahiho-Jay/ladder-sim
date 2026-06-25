@@ -10,6 +10,21 @@
   .tabs{display:flex;gap:8px;margin:16px 0 4px}
   .tabbtn{flex:1;padding:13px;border:none;border-radius:12px;background:#e1e6f0;color:var(--sub);font-size:15.5px;font-weight:800;cursor:pointer;transition:.15s}
   .tabbtn.on{background:var(--accent);color:#fff}
+  .cb-add{font-size:14px;color:var(--sub);font-weight:600}
+  .cb-btns{display:flex;gap:6px;margin-top:10px}
+  .cb-g{flex:1;padding:11px 4px;border:1px solid var(--line);border-radius:9px;background:#fff;font-weight:700;font-size:14px;cursor:pointer;color:var(--txt)}
+  .cb-g:active{background:var(--accent);color:#fff}
+  .cb-axis{position:relative;height:360px;margin:18px 0 6px 46px;border-left:2px solid var(--line)}
+  .cb-age{position:absolute;left:-44px;font-size:12px;color:var(--sub);font-weight:600;transform:translateY(-50%)}
+  .cb-tick{position:absolute;left:-4px;width:8px;border-top:1px solid var(--line)}
+  .cb-mark{position:absolute;left:-8px;display:flex;align-items:center;gap:8px;transform:translateY(-50%)}
+  .cb-dot{width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:grab;touch-action:none;flex:none}
+  .cb-dot:active{cursor:grabbing}
+  .cb-info{font-size:13px;font-weight:700;white-space:nowrap;background:#fff;padding:3px 8px;border-radius:7px;border:1px solid var(--line)}
+  .cb-x{color:var(--peak);font-weight:800;cursor:pointer;margin-left:5px}
+  .cb-empty{text-align:center;color:var(--sub);padding:140px 10px;font-size:14px}
+  .cb-ctrl{display:flex;gap:8px;margin-top:10px}
+  .cb-ctrl button{flex:1;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff;font-weight:700;cursor:pointer;color:var(--txt)}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:var(--bg);color:var(--txt);
     font-family:-apple-system,"Apple SD Gothic Neo",sans-serif;max-width:480px;margin:0 auto;padding:16px 16px 46px}
@@ -131,7 +146,23 @@
   <div id="tab-combo" style="display:none">
     <div class="card">
       <h2>받는 시나리오 — 복합 (오르락내리락)</h2>
-      <div id="combobox" style="padding:24px;text-align:center;color:var(--sub);line-height:1.8">🚧 세로 나이축 + 등급 마커 드래그<br><small>다음 단계에서 구현 — 지금은 탭 전환만 동작합니다</small></div>
+      <div id="combobox">
+        <div class="cb-add">발생한 순서대로 등급을 눌러주세요 👇
+          <div class="cb-btns">
+            <button class="cb-g" data-g="0">인지</button>
+            <button class="cb-g" data-g="1">5급</button>
+            <button class="cb-g" data-g="2">4급</button>
+            <button class="cb-g" data-g="3">3급</button>
+            <button class="cb-g" data-g="4">2급</button>
+            <button class="cb-g" data-g="5">1급</button>
+          </div>
+        </div>
+        <div class="cb-axis" id="cbAxis"></div>
+        <div class="cb-ctrl">
+          <button id="cbUndo">↩️ 되돌리기</button>
+          <button id="cbReset">🔄 초기화</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -415,8 +446,55 @@ document.querySelectorAll('.tabbtn').forEach(b=>{
     const t=b.dataset.tab;
     document.getElementById('tab-up').style.display    = t==='up'    ? '' : 'none';
     document.getElementById('tab-combo').style.display = t==='combo' ? '' : 'none';
+    if(t==='combo') renderCombo();
   };
 });
+
+/* ===== 복합(오르락내리락) 탭 — 세로축 마커 ===== */
+let comboSeq = [];   // 발생 순서 [{g:등급idx, age}]
+function cbRange(){ return [state.age, state.endAge]; }
+function cbAdd(g){
+  const [lo,hi]=cbRange();
+  let age = comboSeq.length ? Math.min(hi-1, (comboSeq[comboSeq.length-1].age||lo)+2) : Math.round((lo+hi)/2);
+  comboSeq.push({g, age:Math.max(lo,Math.min(hi,age))});
+  renderCombo();
+}
+function renderCombo(){
+  const ax=document.getElementById('cbAxis'); if(!ax) return;
+  const [lo,hi]=cbRange(); const H=ax.clientHeight||360;
+  const y=a=>(a-lo)/(hi-lo||1)*H;
+  ax.innerHTML='';
+  if(!comboSeq.length){ ax.innerHTML='<div class="cb-empty">위에서 등급을<br>발생 순서대로 눌러보세요</div>'; return; }
+  [...new Set([lo,Math.round((lo+hi)/2),hi])].forEach(a=>{
+    const lab=document.createElement('div'); lab.className='cb-age'; lab.style.top=y(a)+'px'; lab.textContent=a+'세'; ax.appendChild(lab);
+    const tk=document.createElement('div'); tk.className='cb-tick'; tk.style.top=y(a)+'px'; ax.appendChild(tk);
+  });
+  comboSeq.forEach((it,i)=>{
+    const m=document.createElement('div'); m.className='cb-mark'; m.style.top=y(it.age)+'px';
+    m.innerHTML=`<span class="cb-dot"></span><span class="cb-info">${i+1}. ${SHORT[it.g]} ${it.age}세<span class="cb-x">✕</span></span>`;
+    ax.appendChild(m);
+    m.querySelector('.cb-x').onclick=e=>{ e.stopPropagation(); comboSeq.splice(i,1); renderCombo(); };
+    m.querySelector('.cb-dot').addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      const rect=ax.getBoundingClientRect();
+      const move=ev=>{
+        let na=Math.round(lo+((ev.clientY-rect.top)/H)*(hi-lo));
+        na=Math.max(lo,Math.min(hi,na));
+        const pv=comboSeq[i-1], nx=comboSeq[i+1];
+        if(pv) na=Math.max(pv.age+1, na);   // 위 이웃 침범 방지
+        if(nx) na=Math.min(nx.age-1, na);   // 아래 이웃 침범 방지
+        comboSeq[i].age=na;
+        m.style.top=y(na)+'px';
+        m.querySelector('.cb-info').firstChild.textContent=`${i+1}. ${SHORT[it.g]} ${na}세`;
+      };
+      const up=()=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up); renderCombo(); };
+      document.addEventListener('pointermove',move); document.addEventListener('pointerup',up);
+    });
+  });
+}
+document.querySelectorAll('.cb-g').forEach(b=>b.onclick=()=>cbAdd(+b.dataset.g));
+document.getElementById('cbUndo').onclick=()=>{ comboSeq.pop(); renderCombo(); };
+document.getElementById('cbReset').onclick=()=>{ comboSeq=[]; renderCombo(); };
 </script>
 </body>
 </html>
