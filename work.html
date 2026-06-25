@@ -326,8 +326,8 @@ function applyAgeConstraints(){
   const m90=document.getElementById('maturity').querySelector('[data-v="90세"]');
   if(age>=70){ state.maturity='종신'; m90.disabled=true; } else { m90.disabled=false; }
   const p30=document.getElementById('payTerm').querySelector('[data-v="30"]');
-  // 30년납 = 59세까지만 (60세↑ 30년 불가 = 라이나 데이터 30~59, 종신·90세 무관)
-  const block30=age>=60;
+  // 30년납: 종신만기=65세까지(60~65 크롤 반영 2026-06), 90세만기=59세까지(데이터 30~59)
+  const block30 = state.maturity==='종신' ? age>=66 : age>=60;
   if(block30){ if(state.payTerm===30)state.payTerm=20; p30.disabled=true; } else { p30.disabled=false; }
 }
 
