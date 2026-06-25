@@ -245,7 +245,7 @@ function comboPremiumParts(){
     if(data['주계약']&&data['주계약'][age])main=data['주계약'][age][1];
     [...new Set(comboSeq.map(c=>c.g))].forEach(g=>{
       const gs=GRADES[g].replace('등급',''); const tbl=data[`${state.sigang}|${gs}`]; const row=tbl&&tbl[age];
-      if(row){const[ent,prm]=row; grades[g]=Math.round(prm*DEFAULT_AMOUNTS[g]/ent);}
+      if(row){const[ent,prm]=row; grades[g]=Math.round(prm*state.amount[g]/ent);}
     });
   }
   return {main, grades};
@@ -499,7 +499,7 @@ function comboMonthlyOfGrade(g,age){
   if(onset==null) return 0;                                            // 발생한 적 없음
   const dur=DURATION[GRADES[g]]!==999 ? 10 : (state.endAge-onset+1);   // 인지/5/4=10년, 1/2/3=종신
   if(age<onset || age>=onset+dur) return 0;                            // 최초 발생부터 기간 딱 1번 (재발해도 재지급 X)
-  const base=DEFAULT_AMOUNTS[g]*0.10;
+  const base=state.amount[g]*0.10;
   if(GRADES[g]==='1등급') return base;                                  // 1등급=최중증, 2배 없음
   const upper=comboSeq.some(c=> c.g>g && c.age<=age && c.age>=onset);   // 최초발생 후 더 무거운 등급(재발 포함) 나오면 2배
   return upper ? base*2 : base;
@@ -520,7 +520,7 @@ function comboPremium(){
   [...new Set(comboSeq.map(c=>c.g))].forEach(g=>{                        // 고유 등급만 (같은 등급 중복 특약 제외)
     const gs=GRADES[g].replace('등급',''); const tbl=data[`${state.sigang}|${gs}`];
     const row=tbl&&tbl[age];
-    if(row){const[ent,prm]=row; sum+=Math.round(prm*DEFAULT_AMOUNTS[g]/ent);}
+    if(row){const[ent,prm]=row; sum+=Math.round(prm*state.amount[g]/ent);}
   });
   return Math.round(sum);
 }
