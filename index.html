@@ -14,14 +14,19 @@
   .cb-btns{display:flex;gap:6px;margin-top:10px}
   .cb-g{flex:1;padding:11px 4px;border:1px solid var(--line);border-radius:9px;background:#fff;font-weight:700;font-size:14px;cursor:pointer;color:var(--txt)}
   .cb-g:active{background:var(--accent);color:#fff}
-  .cb-axis{position:relative;height:360px;margin:18px 0 6px 46px;border-left:2px solid var(--line)}
-  .cb-age{position:absolute;left:-44px;font-size:12px;color:var(--sub);font-weight:600;transform:translateY(-50%)}
+  .cb-axis{position:relative;height:420px;margin:18px 0 6px 76px;border-left:3px solid var(--line)}
+  .cb-age{position:absolute;left:-62px;font-size:16px;color:var(--txt);font-weight:800;transform:translateY(-50%)}
   .cb-tick{position:absolute;left:-4px;width:8px;border-top:1px solid var(--line)}
   .cb-mark{position:absolute;left:-8px;display:flex;align-items:center;gap:8px;transform:translateY(-50%)}
   .cb-dot{width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:grab;touch-action:none;flex:none}
   .cb-dot:active{cursor:grabbing}
-  .cb-info{font-size:13px;font-weight:700;white-space:nowrap;background:#fff;padding:3px 8px;border-radius:7px;border:1px solid var(--line)}
-  .cb-x{color:var(--peak);font-weight:800;cursor:pointer;margin-left:5px}
+  .cb-info{font-size:15px;font-weight:700;white-space:nowrap;background:#fff;padding:4px 9px;border-radius:7px;border:1px solid var(--line)}
+  .cb-span{position:absolute;left:0;border-radius:5px;opacity:.14;pointer-events:none}
+  .cb-x{color:var(--peak);font-weight:800;cursor:pointer;margin-left:8px;font-size:18px}
+  .cb-handle{display:inline-block;font-size:16px;font-weight:800;color:#fff;background:var(--accent);padding:9px 16px;border-radius:10px;cursor:grab;touch-action:none;user-select:none;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.25);margin-left:8px;vertical-align:middle}
+  .cb-info{font-size:15.5px;font-weight:700;white-space:nowrap;background:#fff;padding:7px 10px;border-radius:9px;border:2px solid var(--line)}
+  .cb-dot{width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.35);cursor:grab;touch-action:none;flex:none}
+  .cb-handle:active{cursor:grabbing;background:var(--peak)}
   .cb-empty{text-align:center;color:var(--sub);padding:140px 10px;font-size:14px}
   .cb-ctrl{display:flex;gap:8px;margin-top:10px}
   .cb-ctrl button{flex:1;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff;font-weight:700;cursor:pointer;color:var(--txt)}
@@ -459,22 +464,42 @@ function cbAdd(g){
   comboSeq.push({g, age:Math.max(lo,Math.min(hi,age))});
   renderCombo();
 }
+const GCOL=['#a855f7','#3b82f6','#10b981','#eab308','#f97316','#ef4444']; // 인지~1급 무지개
 function renderCombo(){
   const ax=document.getElementById('cbAxis'); if(!ax) return;
-  const [lo,hi]=cbRange(); const H=ax.clientHeight||360;
+  const [lo,hi]=cbRange(); const H=ax.clientHeight||420;
   const y=a=>(a-lo)/(hi-lo||1)*H;
   ax.innerHTML='';
   if(!comboSeq.length){ ax.innerHTML='<div class="cb-empty">위에서 등급을<br>발생 순서대로 눌러보세요</div>'; return; }
-  [...new Set([lo,Math.round((lo+hi)/2),hi])].forEach(a=>{
+  // 눈금 5살 간격
+  let _t=[lo]; for(let a=Math.ceil(lo/5)*5;a<hi;a+=5){ if(a>lo)_t.push(a); } _t.push(hi);
+  [...new Set(_t)].forEach(a=>{
     const lab=document.createElement('div'); lab.className='cb-age'; lab.style.top=y(a)+'px'; lab.textContent=a+'세'; ax.appendChild(lab);
     const tk=document.createElement('div'); tk.className='cb-tick'; tk.style.top=y(a)+'px'; ax.appendChild(tk);
   });
+  // 10년 영역 (인지/5/4 = idx 0,1,2) — 등급색 반투명
+  comboSeq.forEach((it)=>{
+    if(it.g<=2){
+      const e=Math.min(hi,it.age+10);
+      const sp=document.createElement('div'); sp.className='cb-span';
+      sp.style.top=y(it.age)+'px'; sp.style.height=(y(e)-y(it.age))+'px';
+      sp.style.left='0'; sp.style.width='100%'; sp.style.background=GCOL[it.g];
+      ax.appendChild(sp);
+    }
+  });
+  // 마커 — 점(등급색) + 지그재그 박스 + 큰 핸들
   comboSeq.forEach((it,i)=>{
     const m=document.createElement('div'); m.className='cb-mark'; m.style.top=y(it.age)+'px';
-    m.innerHTML=`<span class="cb-dot"></span><span class="cb-info">${i+1}. ${SHORT[it.g]} ${it.age}세<span class="cb-x">✕</span></span>`;
+    const zig=(i%2)?72:8;
+    const ten=(it.g<=2)?'10년':'종신';
+    m.innerHTML=`<span class="cb-dot" style="background:${GCOL[it.g]}"></span>`+
+      `<span class="cb-info" style="margin-left:${zig}px;border-color:${GCOL[it.g]}">`+
+        `<b style="color:${GCOL[it.g]}">${i+1}.${SHORT[it.g]}</b> <b>${it.age}세</b> <small>(${ten})</small>`+
+        `<span class="cb-handle">↕</span><span class="cb-x">✕</span>`+
+      `</span>`;
     ax.appendChild(m);
     m.querySelector('.cb-x').onclick=e=>{ e.stopPropagation(); comboSeq.splice(i,1); renderCombo(); };
-    m.querySelector('.cb-dot').addEventListener('pointerdown',e=>{
+    const startDrag=e=>{
       e.preventDefault();
       const rect=ax.getBoundingClientRect();
       const move=ev=>{
@@ -483,13 +508,13 @@ function renderCombo(){
         const pv=comboSeq[i-1], nx=comboSeq[i+1];
         if(pv) na=Math.max(pv.age+1, na);   // 위 이웃 침범 방지
         if(nx) na=Math.min(nx.age-1, na);   // 아래 이웃 침범 방지
-        comboSeq[i].age=na;
-        m.style.top=y(na)+'px';
-        m.querySelector('.cb-info').firstChild.textContent=`${i+1}. ${SHORT[it.g]} ${na}세`;
+        comboSeq[i].age=na; m.style.top=y(na)+'px';
       };
       const up=()=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up); renderCombo(); };
       document.addEventListener('pointermove',move); document.addEventListener('pointerup',up);
-    });
+    };
+    m.querySelector('.cb-handle').addEventListener('pointerdown',startDrag);
+    m.querySelector('.cb-dot').addEventListener('pointerdown',startDrag);
   });
 }
 document.querySelectorAll('.cb-g').forEach(b=>b.onclick=()=>cbAdd(+b.dataset.g));
