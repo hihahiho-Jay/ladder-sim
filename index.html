@@ -410,7 +410,7 @@ function updateGraph(){
     if(v>0){
       if(isComboTab()){
         [...new Set(comboSeq.map(c=>c.g))].sort((x,y)=>x-y).forEach(gi=>{
-          const m=comboSeq.filter(c=>c.g===gi).reduce((acc,c)=>acc+comboMonthlyOf(c,a),0);
+          const m=comboMonthlyOfGrade(gi,a);
           if(m>0){ const s=document.createElement('div');s.className='seg2';s.style.background=COLORS[gi];bar.appendChild(s); }
         });
       } else {
@@ -476,16 +476,18 @@ document.querySelectorAll('.tabbtn').forEach(b=>{
 let comboSeq = [];   // 발생 순서 [{g:등급idx, age}]
 // ── 복합 탭 계산 (시퀀스 기반 2배: 자기 발생 후 더 무거운 등급 나오면 2배) ──
 function isComboTab(){ const t=document.getElementById('tab-combo'); return !!t && t.style.display!=='none'; }
-function comboMonthlyOf(inst,age){
-  const g=inst.g, onset=inst.age;
+function comboFirstOnset(g){ for(const c of comboSeq) if(c.g===g) return c.age; return null; }  // 등급별 최초 발생나이
+function comboMonthlyOfGrade(g,age){
+  const onset=comboFirstOnset(g);
+  if(onset==null) return 0;                                            // 발생한 적 없음
   const dur=DURATION[GRADES[g]]!==999 ? 10 : (state.endAge-onset+1);   // 인지/5/4=10년, 1/2/3=종신
-  if(age<onset || age>=onset+dur) return 0;
+  if(age<onset || age>=onset+dur) return 0;                            // 최초 발생부터 기간 딱 1번 (재발해도 재지급 X)
   const base=DEFAULT_AMOUNTS[g]*0.10;
   if(GRADES[g]==='1등급') return base;                                  // 1등급=최중증, 2배 없음
-  const upper=comboSeq.some(c=> c.g>g && c.age<=age && c.age>=onset);   // 자기 발생 후 더 무거운 등급 발생?
+  const upper=comboSeq.some(c=> c.g>g && c.age<=age && c.age>=onset);   // 최초발생 후 더 무거운 등급(재발 포함) 나오면 2배
   return upper ? base*2 : base;
 }
-function comboTotalAt(age){ let s=0; comboSeq.forEach(c=>s+=comboMonthlyOf(c,age)); return s; }
+function comboTotalAt(age){ let s=0; [...new Set(comboSeq.map(c=>c.g))].forEach(g=>s+=comboMonthlyOfGrade(g,age)); return s; }
 function comboAges(){
   if(!comboSeq.length) return [state.age];
   const start=Math.min(...comboSeq.map(c=>c.age));
