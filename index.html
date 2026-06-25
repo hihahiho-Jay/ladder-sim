@@ -237,7 +237,21 @@ function premium(){
 }
 function payYears(){ const pt=resolvePayTerm(state.age,String(state.payTerm)); return pt==='종신'?(state.endAge-state.age+1):(+pt); }
 // 주계약/등급별 월보험료 분리 (납입면제 계산용)
+function comboPremiumParts(){
+  const pt=resolvePayTerm(state.age,String(state.payTerm));
+  const data=PREM_FULL[`${state.plan}|${state.classic}|${state.gender}|${state.maturity}|${pt}`];
+  const age=String(state.age); let main=0; const grades=[0,0,0,0,0,0];
+  if(comboSeq.length && data){
+    if(data['주계약']&&data['주계약'][age])main=data['주계약'][age][1];
+    [...new Set(comboSeq.map(c=>c.g))].forEach(g=>{
+      const gs=GRADES[g].replace('등급',''); const tbl=data[`${state.sigang}|${gs}`]; const row=tbl&&tbl[age];
+      if(row){const[ent,prm]=row; grades[g]=Math.round(prm*DEFAULT_AMOUNTS[g]/ent);}
+    });
+  }
+  return {main, grades};
+}
 function premiumParts(){
+  if(isComboTab()) return comboPremiumParts();
   const pt=resolvePayTerm(state.age,String(state.payTerm));
   const data=PREM_FULL[`${state.plan}|${state.classic}|${state.gender}|${state.maturity}|${pt}`];
   const age=String(state.age); let main=0; const grades=[0,0,0,0,0,0];
@@ -256,14 +270,17 @@ function paidParts(){
   const {main, grades}=premiumParts(); const py=payYears();
   let paidFull=main*py*12, paidReal=main*py*12;   // 주계약은 면제 제외 (주계약 납입면제=80%이상 장해 등 조건이 까다로워 현실성 낮음)
   const detail=[];
+  const _combo=isComboTab();
   GRADES.forEach((g,i)=>{
-    if(!state.active[i])return;
+    const _active=_combo ? comboSeq.some(c=>c.g===i) : state.active[i];
+    if(!_active)return;
     paidFull+=grades[i]*py*12;
-    if(state.onset[i]!=null){
-      const paidYrs=Math.max(0, Math.min(py, state.onset[i]-state.age));   // 발생 전까지만 납입
+    const _onset=_combo ? comboFirstOnset(i) : state.onset[i];   // 복합=등급 최초 발생나이
+    if(_onset!=null){
+      const paidYrs=Math.max(0, Math.min(py, _onset-state.age));   // 발생 전까지만 납입
       paidReal+=grades[i]*paidYrs*12;
       const waivedYrs=py-paidYrs;
-      if(waivedYrs>0 && grades[i]>0) detail.push({i, onset:state.onset[i], yrs:waivedYrs, amt:grades[i]*waivedYrs*12});
+      if(waivedYrs>0 && grades[i]>0) detail.push({i, onset:_onset, yrs:waivedYrs, amt:grades[i]*waivedYrs*12});
     } else { paidReal+=grades[i]*py*12; }
   });
   return {paidReal, paidFull, waived:paidFull-paidReal, detail};
