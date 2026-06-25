@@ -441,6 +441,8 @@ function render(){
   document.getElementById('maturity').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===state.maturity));
   document.getElementById('payTerm').querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===state.payTerm));
   buildAmt(); buildSet(); updateGraph(); updateSettle();
+  const tc=document.getElementById('tab-combo');
+  if(typeof renderCombo==='function' && tc && tc.style.display!=='none') renderCombo();
 }
 buildEndAge(); applyAgeConstraints(); buildLegend(); render();
 
