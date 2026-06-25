@@ -17,7 +17,8 @@
   .cb-axis{position:relative;height:420px;margin:18px 0 6px 76px;border-left:3px solid var(--line)}
   .cb-age{position:absolute;left:-62px;font-size:16px;color:var(--txt);font-weight:800;transform:translateY(-50%)}
   .cb-tick{position:absolute;left:-4px;width:8px;border-top:1px solid var(--line)}
-  .cb-mark{position:absolute;left:-8px;display:flex;align-items:center;gap:8px;transform:translateY(-50%)}
+  .cb-mark{position:absolute;left:16px;display:flex;align-items:center;transform:translateY(-50%);z-index:2}
+  .cb-line{position:absolute;left:-2px;border-left:2px dotted;width:0;z-index:1}
   .cb-dot{width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:grab;touch-action:none;flex:none}
   .cb-dot:active{cursor:grabbing}
   .cb-info{font-size:15px;font-weight:700;white-space:nowrap;background:#fff;padding:4px 9px;border-radius:7px;border:1px solid var(--line)}
@@ -26,7 +27,7 @@
   .cb-handle{display:inline-block;font-size:16px;font-weight:800;color:#fff;background:var(--accent);padding:9px 16px;border-radius:10px;cursor:grab;touch-action:none;user-select:none;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.25);margin-left:8px;vertical-align:middle}
   .cb-info{font-size:13.5px;font-weight:700;white-space:nowrap;background:#fff;padding:4px 8px;border-radius:8px;border:2px solid var(--line);cursor:grab;touch-action:none}
   .cb-info:active{cursor:grabbing}
-  .cb-dot{width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.35);cursor:grab;touch-action:none;flex:none}
+  .cb-dot{position:absolute;left:-11px;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.35);cursor:grab;touch-action:none;transform:translateY(-50%);z-index:3}
   .cb-handle:active{cursor:grabbing;background:var(--peak)}
   .cb-empty{text-align:center;color:var(--sub);padding:140px 10px;font-size:14px}
   .cb-ctrl{display:flex;gap:8px;margin-top:10px}
@@ -490,15 +491,26 @@ function renderCombo(){
       ax.appendChild(sp);
     }
   });
-  // 마커 — 점(등급색) + 지그재그 박스 + 큰 핸들
+  // 박스 충돌 회피 (위→아래, comboSeq는 나이 오름차순) — 겹치면 아래로 밀기
+  const minGap=30; let _lastY=-1e9;
+  const boxYs=comboSeq.map(it=>{ const by=Math.max(y(it.age), _lastY+minGap); _lastY=by; return by; });
+  // 마커 — 점(나이 위치 고정) + 점선 연결 + 박스(충돌회피)
   comboSeq.forEach((it,i)=>{
-    const m=document.createElement('div'); m.className='cb-mark'; m.style.top=y(it.age)+'px';
-    const zig=(i%2)?52:6;
-    m.innerHTML=`<span class="cb-dot" style="background:${GCOL[it.g]}"></span>`+
-      `<span class="cb-info" style="margin-left:${zig}px;border-color:${GCOL[it.g]}">`+
+    const dotY=y(it.age), boxY=boxYs[i];
+    // 점선 연결 (박스가 밀렸을 때만)
+    if(boxY-dotY>3){
+      const ln=document.createElement('div'); ln.className='cb-line';
+      ln.style.top=dotY+'px'; ln.style.height=(boxY-dotY)+'px'; ln.style.borderColor=GCOL[it.g];
+      ax.appendChild(ln);
+    }
+    // 점 (나이 위치 — 축 위)
+    const dot=document.createElement('div'); dot.className='cb-dot'; dot.style.top=dotY+'px'; dot.style.background=GCOL[it.g];
+    ax.appendChild(dot);
+    // 박스 (충돌회피 위치)
+    const m=document.createElement('div'); m.className='cb-mark'; m.style.top=boxY+'px';
+    m.innerHTML=`<span class="cb-info" style="border-color:${GCOL[it.g]}">`+
         `<b style="color:${GCOL[it.g]}">${SHORT[it.g]}</b> ${it.age}세`+
-        `<span class="cb-x">✕</span>`+
-      `</span>`;
+        `<span class="cb-x">✕</span></span>`;
     ax.appendChild(m);
     m.querySelector('.cb-x').onclick=e=>{ e.stopPropagation(); comboSeq.splice(i,1); renderCombo(); };
     const startDrag=e=>{
@@ -510,13 +522,13 @@ function renderCombo(){
         const pv=comboSeq[i-1], nx=comboSeq[i+1];
         if(pv) na=Math.max(pv.age+1, na);   // 위 이웃 침범 방지
         if(nx) na=Math.min(nx.age-1, na);   // 아래 이웃 침범 방지
-        comboSeq[i].age=na; m.style.top=y(na)+'px';
+        comboSeq[i].age=na; dot.style.top=y(na)+'px'; m.style.top=y(na)+'px';
       };
       const up=()=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up); renderCombo(); };
       document.addEventListener('pointermove',move); document.addEventListener('pointerup',up);
     };
     m.querySelector('.cb-info').addEventListener('pointerdown',e=>{ if(e.target.classList.contains('cb-x'))return; startDrag(e); });
-    m.querySelector('.cb-dot').addEventListener('pointerdown',startDrag);
+    dot.addEventListener('pointerdown',startDrag);
   });
 }
 document.querySelectorAll('.cb-g').forEach(b=>b.onclick=()=>cbAdd(+b.dataset.g));
