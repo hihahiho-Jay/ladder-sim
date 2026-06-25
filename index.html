@@ -549,9 +549,11 @@ function renderCombo(){
     const tk=document.createElement('div'); tk.className='cb-tick'; tk.style.top=y(a)+'px'; ax.appendChild(tk);
     const gr=document.createElement('div'); gr.className='cb-grid'; gr.style.top=y(a)+'px'; ax.appendChild(gr);
   });
-  // 10년 영역 (인지/5/4 = idx 0,1,2) — 등급색 반투명
+  // 10년 영역 (인지/5/4 = idx 0,1,2) — 등급색 반투명, 등급별 최초 발생만 (재발은 재지급X라 영역 표시 안 함)
+  const _spanSeen=new Set();
   comboSeq.forEach((it)=>{
-    if(it.g<=2){
+    if(it.g<=2 && !_spanSeen.has(it.g)){
+      _spanSeen.add(it.g);
       const e=Math.min(hi,it.age+10);
       const sp=document.createElement('div'); sp.className='cb-span';
       sp.style.top=y(it.age)+'px'; sp.style.height=(y(e)-y(it.age))+'px';
