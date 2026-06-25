@@ -19,6 +19,8 @@
   .cb-tick{position:absolute;left:-4px;width:8px;border-top:1px solid var(--line)}
   .cb-mark{position:absolute;left:16px;display:flex;align-items:center;transform:translateY(-50%);z-index:2}
   .cb-line{position:absolute;left:-2px;border-left:2px dotted;width:0;z-index:1}
+  .cb-grid{position:absolute;left:0;width:100%;border-top:1px solid #888;opacity:.4;z-index:0}
+  .cb-g:disabled{opacity:.35;cursor:not-allowed}
   .cb-dot{width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:grab;touch-action:none;flex:none}
   .cb-dot:active{cursor:grabbing}
   .cb-info{font-size:15px;font-weight:700;white-space:nowrap;background:#fff;padding:4px 9px;border-radius:7px;border:1px solid var(--line)}
@@ -463,6 +465,7 @@ document.querySelectorAll('.tabbtn').forEach(b=>{
 let comboSeq = [];   // 발생 순서 [{g:등급idx, age}]
 function cbRange(){ return [state.age, state.endAge]; }
 function cbAdd(g){
+  if(comboSeq.length && comboSeq[comboSeq.length-1].g===g) return; // 같은 등급 연속 입력 불가 (5,4,5 OK / 5,5 X)
   const [lo,hi]=cbRange();
   let age = comboSeq.length ? Math.min(hi-1, (comboSeq[comboSeq.length-1].age||lo)+2) : Math.round((lo+hi)/2);
   comboSeq.push({g, age:Math.max(lo,Math.min(hi,age))});
@@ -471,6 +474,9 @@ function cbAdd(g){
 const GCOL=['#a855f7','#3b82f6','#10b981','#eab308','#f97316','#ef4444']; // 인지~1급 무지개
 function renderCombo(){
   const ax=document.getElementById('cbAxis'); if(!ax) return;
+  // 직전 등급 버튼 비활성 (같은 등급 연속 방지 시각화)
+  const _lastG=comboSeq.length?comboSeq[comboSeq.length-1].g:-1;
+  document.querySelectorAll('.cb-g').forEach(b=>{ b.disabled=(+b.dataset.g===_lastG); });
   const [lo,hi]=cbRange(); const H=ax.clientHeight||420;
   const y=a=>(a-lo)/(hi-lo||1)*H;
   ax.innerHTML='';
@@ -480,6 +486,7 @@ function renderCombo(){
   [...new Set(_t)].forEach(a=>{
     const lab=document.createElement('div'); lab.className='cb-age'; lab.style.top=y(a)+'px'; lab.textContent=a+'세'; ax.appendChild(lab);
     const tk=document.createElement('div'); tk.className='cb-tick'; tk.style.top=y(a)+'px'; ax.appendChild(tk);
+    const gr=document.createElement('div'); gr.className='cb-grid'; gr.style.top=y(a)+'px'; ax.appendChild(gr);
   });
   // 10년 영역 (인지/5/4 = idx 0,1,2) — 등급색 반투명
   comboSeq.forEach((it)=>{
