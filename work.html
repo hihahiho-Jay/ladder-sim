@@ -220,7 +220,6 @@ function limitOf(g){ const band=state.age>=65?'65이상':'64이하'; return LIMI
 function amountOptions(g){ const max=limitOf(g); const o=[]; for(let m=50;m<=max;m+=50)o.push(m); return o; }
 function clampAmounts(){ GRADES.forEach((g,i)=>{ const max=limitOf(g); if(state.amount[i]>max)state.amount[i]=max; if(state.amount[i]<50)state.amount[i]=50; }); }
 function premium(){
-  if(isComboTab())return comboPremium();
   if(!state.active.some(a=>a)) return 0;   // 가입한 등급이 하나도 없으면 = 아무것도 안 함 = 0원
   const pt=resolvePayTerm(state.age,String(state.payTerm));
   const data=PREM_FULL[`${state.plan}|${state.classic}|${state.gender}|${state.maturity}|${pt}`];
@@ -251,7 +250,6 @@ function comboPremiumParts(){
   return {main, grades};
 }
 function premiumParts(){
-  if(isComboTab()) return comboPremiumParts();
   const pt=resolvePayTerm(state.age,String(state.payTerm));
   const data=PREM_FULL[`${state.plan}|${state.classic}|${state.gender}|${state.maturity}|${pt}`];
   const age=String(state.age); let main=0; const grades=[0,0,0,0,0,0];
@@ -272,7 +270,7 @@ function paidParts(){
   const detail=[];
   const _combo=isComboTab();
   GRADES.forEach((g,i)=>{
-    const _active=_combo ? comboSeq.some(c=>c.g===i) : state.active[i];
+    const _active=state.active[i];   // 가입한 등급(가입금액 드롭다운) — 월납/면제 모두 가입 기준
     if(!_active)return;
     paidFull+=grades[i]*py*12;
     const _onset=_combo ? comboFirstOnset(i) : state.onset[i];   // 복합=등급 최초 발생나이
