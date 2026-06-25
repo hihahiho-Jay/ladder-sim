@@ -7,6 +7,9 @@
 <style>
   :root{--bg:#eef2f9;--card:#ffffff;--line:#e1e6f0;--txt:#161d2c;--sub:#4f5870;
     --accent:#2f6df0;--gold:#a35e09;--peak:#d9560a;--dead:#bcc3d2;--profit:#13923f;--inp:#f2f5fb}
+  .tabs{display:flex;gap:8px;margin:16px 0 4px}
+  .tabbtn{flex:1;padding:13px;border:none;border-radius:12px;background:#e1e6f0;color:var(--sub);font-size:15.5px;font-weight:800;cursor:pointer;transition:.15s}
+  .tabbtn.on{background:var(--accent);color:#fff}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:var(--bg);color:var(--txt);
     font-family:-apple-system,"Apple SD Gothic Neo",sans-serif;max-width:480px;margin:0 auto;padding:16px 16px 46px}
@@ -113,9 +116,23 @@
     <div class="premline">매달 내는 보험료 <b id="premV">0</b>원</div>
   </div>
 
-  <div class="card">
-    <h2>받는 시나리오 — 등급 켜고 슬라이더로 "몇 세에" 조절</h2>
-    <div id="setbox"></div>
+  <div class="tabs">
+    <button class="tabbtn on" data-tab="up">🔼 상향식 (악화)</button>
+    <button class="tabbtn" data-tab="combo">🔁 복합 (오르락내리락)</button>
+  </div>
+
+  <div id="tab-up">
+    <div class="card">
+      <h2>받는 시나리오 — 등급 켜고 슬라이더로 "몇 세에" 조절</h2>
+      <div id="setbox"></div>
+    </div>
+  </div>
+
+  <div id="tab-combo" style="display:none">
+    <div class="card">
+      <h2>받는 시나리오 — 복합 (오르락내리락)</h2>
+      <div id="combobox" style="padding:24px;text-align:center;color:var(--sub);line-height:1.8">🚧 세로 나이축 + 등급 마커 드래그<br><small>다음 단계에서 구현 — 지금은 탭 전환만 동작합니다</small></div>
+    </div>
   </div>
 
   <div class="card">
@@ -389,6 +406,17 @@ function render(){
   buildAmt(); buildSet(); updateGraph(); updateSettle();
 }
 buildEndAge(); applyAgeConstraints(); buildLegend(); render();
+
+/* ===== 탭 전환 (상향식 / 복합) ===== */
+document.querySelectorAll('.tabbtn').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    const t=b.dataset.tab;
+    document.getElementById('tab-up').style.display    = t==='up'    ? '' : 'none';
+    document.getElementById('tab-combo').style.display = t==='combo' ? '' : 'none';
+  };
+});
 </script>
 </body>
 </html>
