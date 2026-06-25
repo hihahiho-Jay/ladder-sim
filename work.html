@@ -496,7 +496,7 @@ function renderCombo(){
     const zig=(i%2)?52:6;
     m.innerHTML=`<span class="cb-dot" style="background:${GCOL[it.g]}"></span>`+
       `<span class="cb-info" style="margin-left:${zig}px;border-color:${GCOL[it.g]}">`+
-        `<b style="color:${GCOL[it.g]}">${i+1}.${SHORT[it.g]}</b> ${it.age}세`+
+        `<b style="color:${GCOL[it.g]}">${SHORT[it.g]}</b> ${it.age}세`+
         `<span class="cb-x">✕</span>`+
       `</span>`;
     ax.appendChild(m);
