@@ -65,6 +65,8 @@
   .premline b{color:var(--accent);font-size:25px}
 
   .grow{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .amtrow.g-ten,.grow.g-ten{background:#fff7ed}    /* 10년 보장: 인지/5/4급 */
+  .amtrow.g-life,.grow.g-life{background:#eef6ff}  /* 종신 보장: 3/2/1급 */
   .grow:last-child{border-bottom:none}
   .gtog{width:62px;height:40px;border-radius:11px;border:1px solid var(--line);background:var(--inp);
     color:var(--sub);font-size:15px;font-weight:800;flex-shrink:0;display:flex;align-items:center;justify-content:center}
@@ -360,7 +362,7 @@ seg('gender','gender');seg('sigang','sigang');seg('plan','plan');seg('classic','
 function buildAmt(){
   const box=document.getElementById('amtbox'); box.innerHTML='';
   GRADES.forEach((g,i)=>{
-    const row=document.createElement('div'); row.className='amtrow'+(state.active[i]?'':' off');
+    const row=document.createElement('div'); row.className='amtrow'+(state.active[i]?'':' off')+(i<=2?' g-ten':' g-life');
     const nm=document.createElement('div'); nm.className='nm'; nm.innerHTML=`<i style="background:${COLORS[i]}"></i>${SHORT[i]}`;
     const sel=document.createElement('select');
     if(state.active[i]){
@@ -383,7 +385,7 @@ function buildSet(){
   GRADES.forEach((g,i)=>{
     if(!state.active[i]) return;            // 가입 안 한 등급은 안 보임
     shown++;
-    const row=document.createElement('div'); row.className='grow';
+    const row=document.createElement('div'); row.className='grow'+(i<=2?' g-ten':' g-life');
     const tog=document.createElement('button'); tog.className='gtog'+(state.onset[i]!=null?' on':'');
     if(state.onset[i]!=null) tog.style.background=COLORS[i];
     tog.textContent=SHORT[i];
