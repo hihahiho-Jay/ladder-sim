@@ -194,7 +194,6 @@
     <div class="row"><span class="k">실제 납입 보험료 <small style="color:var(--sub);font-weight:600">(납입면제 반영 후)</small></span><span class="v" id="s_paid">0만원</span></div>
     <div class="row"><span class="k">총 지급액</span><span class="v" id="s_recv">0만원</span></div>
     <div class="big"><div class="k">총 지급액 − 총 보험료</div><div class="v"><span id="s_profit">0</span><small>만원</small></div></div>
-    <div class="ratio" id="s_ratio"></div>
   </div>
 
   <div class="redwarn">⚠️ 교육·상담 참고용 자료일 뿐입니다!<br>월 납입 보험료, 총 납입 보험료, 납입면제 금액, 총 지급 금액 등은<br>표시된 것과 실제가 다를 수 있습니다!</div>
@@ -462,7 +461,6 @@ function updateSettle(){
     : '<div class="wdnone">받기 시작 나이가 납입기간(완납) 이후라 면제 없음 — 나이를 당기면 면제가 생겨요</div>';
   document.getElementById('s_recv').textContent=recvMan.toLocaleString()+'만원';
   document.getElementById('s_profit').textContent=profit.toLocaleString();
-  document.getElementById('s_ratio').textContent=ratio>0?`낸 돈의 ${ratio.toFixed(1)}배`:'';
 }
 
 function buildLegend(){ const L=document.getElementById('legend'); L.innerHTML=''; GRADES.forEach((g,i)=>{const s=document.createElement('span');s.innerHTML=`<i style="background:${COLORS[i]}"></i>${SHORT[i]}`;L.appendChild(s);}); }
