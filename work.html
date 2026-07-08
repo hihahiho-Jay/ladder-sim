@@ -264,7 +264,17 @@ function premiumParts(){
   }
   return {main, grades};
 }
-// 납입면제 반영: 생활자금특약은 자기 등급 발생(받기 시작) 나이부터 보험료 면제 (약관 제7조②). 주계약은 면제 제외(보수적)
+// 납입면제 반영 (2026-07-08 매니저 확정): 등급 판정 시 해당 등급 + 하위(더 약한) 등급 특약 전부 차회부터 면제.
+// → 특약 i 의 면제 시작 = 자기 이상(같거나 더 중증, k>=i) 등급의 최초 발생 나이.
+//   예: 3등급 판정 → 3·4·5·인지 특약 면제 (1·2등급 특약은 계속 납입). 주계약은 면제 제외(보수적)
+function waiverOnset(i,_combo){
+  let earliest=null;
+  for(let k=i;k<GRADES.length;k++){
+    const o=_combo ? comboFirstOnset(k) : (state.active[k]?state.onset[k]:null);
+    if(o!=null && (earliest==null || o<earliest)) earliest=o;
+  }
+  return earliest;
+}
 function paidParts(){
   const {main, grades}=premiumParts(); const py=payYears();
   let paidFull=main*py*12, paidReal=main*py*12;   // 주계약은 면제 제외 (주계약 납입면제=80%이상 장해 등 조건이 까다로워 현실성 낮음)
@@ -274,7 +284,7 @@ function paidParts(){
     const _active=state.active[i];   // 가입한 등급(가입금액 드롭다운) — 월납/면제 모두 가입 기준
     if(!_active)return;
     paidFull+=grades[i]*py*12;
-    const _onset=_combo ? comboFirstOnset(i) : state.onset[i];   // 복합=등급 최초 발생나이
+    const _onset=waiverOnset(i,_combo);   // 자기 이상 등급 최초 발생 = 면제 시작 (하위 전체 면제 룰)
     if(_onset!=null){
       const paidYrs=Math.max(0, Math.min(py, _onset-state.age));   // 발생 전까지만 납입
       paidReal+=grades[i]*paidYrs*12;
