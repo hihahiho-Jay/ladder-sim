@@ -202,10 +202,10 @@
       <table>
         <thead>
           <tr>
-            <th>물가상승률 기준</th>
-            <th style="width:78px">상승률</th>
-            <th style="width:130px">실질가치</th>
-            <th style="width:78px">명목대비</th>
+            <th style="text-align:left">물가상승률 기준</th>
+            <th style="width:70px;text-align:center">상승률</th>
+            <th style="width:120px;text-align:right">실질가치</th>
+            <th style="width:78px;text-align:right">명목대비</th>
           </tr>
         </thead>
         <tbody id="real_body"></tbody>
@@ -520,16 +520,15 @@ function updateReal(){
     const pct=nominal>0?Math.round(real/nominal*100):0;
     return '<tr>'
       +'<td style="text-align:left"><b>'+row.label+'</b></td>'
-      +'<td>'+(row.r*100).toFixed(1)+'%</td>'
-      +'<td><b>'+fmtEok(real)+'</b></td>'
-      +'<td>'+pct+'%</td>'
+      +'<td style="text-align:center">'+(row.r*100).toFixed(1)+'%</td>'
+      +'<td style="text-align:right"><b>'+fmtEok(real)+'</b></td>'
+      +'<td style="text-align:right">'+pct+'%</td>'
       +'</tr>';
   }).join('');
   const note=document.getElementById('real_note');
   if(note) note.innerHTML=
     ROWS.map(row=>'※ <b>'+row.label+'</b> — '+row.note).join('<br>')
-    +'<br>명목 총 지급액 <b>'+fmtEok(nominal)+'</b>을 미래 물가로 할인해 현재 돈 가치로 환산.'
-    +'<br>🔮 전망 — IMF 세계경제전망상 한국 물가는 2028년 이후 <b>2.0%</b> 수렴 예상 (2025~31 평균 2.1%).';
+    +'<br>IMF : 한국물가 2028년 이후 <b>2.0%</b> 수렴 예상 (2025~2031 평균 2.1%)';
 }
 
 function buildLegend(){ const L=document.getElementById('legend'); L.innerHTML=''; GRADES.forEach((g,i)=>{const s=document.createElement('span');s.innerHTML=`<i style="background:${COLORS[i]}"></i>${SHORT[i]}`;L.appendChild(s);}); }
