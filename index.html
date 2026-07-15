@@ -196,6 +196,24 @@
     <div class="big"><div class="k">총 지급액 − 총 보험료</div><div class="v"><span id="s_profit">0</span><small>만원</small></div></div>
   </div>
 
+  <div class="card">
+    <h2 style="cursor:pointer;user-select:none" onclick="toggleReal()"><span id="real_caret">▼</span> 💵 물가 반영 실질가치 <small style="float:right;color:var(--sub);font-weight:600;font-size:13px">(총 지급액을 현재 돈 가치로)</small></h2>
+    <div id="real_wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>물가상승률 기준</th>
+            <th style="width:78px">상승률</th>
+            <th style="width:130px">실질가치</th>
+            <th style="width:78px">명목대비</th>
+          </tr>
+        </thead>
+        <tbody id="real_body"></tbody>
+      </table>
+      <div id="real_note" style="font-size:12px;color:var(--sub);line-height:1.7;margin-top:8px"></div>
+    </div>
+  </div>
+
   <div class="redwarn">⚠️ 교육·상담 참고용 자료일 뿐입니다!<br>월 납입 보험료, 총 납입 보험료, 납입면제 금액, 총 지급 금액 등은<br>표시된 것과 실제가 다를 수 있습니다!</div>
 
 <script src="sim_data.js?v=20260701"></script>
@@ -471,6 +489,47 @@ function updateSettle(){
     : '<div class="wdnone">받기 시작 나이가 납입기간(완납) 이후라 면제 없음 — 나이를 당기면 면제가 생겨요</div>';
   document.getElementById('s_recv').textContent=recvMan.toLocaleString()+'만원';
   document.getElementById('s_profit').textContent=profit.toLocaleString();
+  updateReal();
+}
+
+/* ===== 물가 반영 실질가치 (미래 지급액을 현재가치로 할인) ===== */
+function toggleReal(){
+  const w=document.getElementById('real_wrap'), c=document.getElementById('real_caret');
+  if(!w) return;
+  const open = w.style.display!=='none';
+  w.style.display = open ? 'none' : '';
+  if(c) c.textContent = open ? '▶' : '▼';
+}
+function realRecvMan(r){
+  // 각 미래 연도 지급액(만원)을 (1+r)^(경과년수)로 할인 → 현재가치 합산
+  return Math.round(ages().reduce((s,a)=>s + totalAt(a)*12 / Math.pow(1+r, Math.max(0,a-state.age)), 0));
+}
+function fmtEok(man){
+  return man>=10000 ? (Math.round(man/1000)/10)+'억원' : man.toLocaleString()+'만원';
+}
+function updateReal(){
+  const tb=document.getElementById('real_body'); if(!tb) return;
+  const nominal=Math.round(ages().reduce((s,a)=>s+totalAt(a)*12,0));
+  // 기준: 한국은행 물가안정목표 2.0% / 통계청·IMF 실측 최근5년 2.8%
+  const ROWS=[
+    {label:'한국은행', note:'물가안정목표 2.0% (2019년~현재 정책 목표)', r:0.020},
+    {label:'통계청',   note:'소비자물가 실측 2.8% (2020~2024년 최근 5년 평균)', r:0.028}
+  ];
+  tb.innerHTML=ROWS.map(row=>{
+    const real=realRecvMan(row.r);
+    const pct=nominal>0?Math.round(real/nominal*100):0;
+    return '<tr>'
+      +'<td style="text-align:left"><b>'+row.label+'</b></td>'
+      +'<td>'+(row.r*100).toFixed(1)+'%</td>'
+      +'<td><b>'+fmtEok(real)+'</b></td>'
+      +'<td>'+pct+'%</td>'
+      +'</tr>';
+  }).join('');
+  const note=document.getElementById('real_note');
+  if(note) note.innerHTML=
+    ROWS.map(row=>'※ <b>'+row.label+'</b> — '+row.note).join('<br>')
+    +'<br>명목 총 지급액 <b>'+fmtEok(nominal)+'</b>을 미래 물가로 할인해 현재 돈 가치로 환산.'
+    +'<br>🔮 전망 — IMF 세계경제전망상 한국 물가는 2028년 이후 <b>2.0%</b> 수렴 예상 (2025~31 평균 2.1%).';
 }
 
 function buildLegend(){ const L=document.getElementById('legend'); L.innerHTML=''; GRADES.forEach((g,i)=>{const s=document.createElement('span');s.innerHTML=`<i style="background:${COLORS[i]}"></i>${SHORT[i]}`;L.appendChild(s);}); }
