@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script>
+/* 캐시 브레이커 — URL에 버전 없으면 타임스탬프 붙여 1회 새로고침 → 항상 최신 배포 로드 */
+(function(){try{if(!/[?&]v=/.test(location.search)){
+  var u=location.href+(location.search?'&':'?')+'v='+Date.now();
+  location.replace(u);
+}}catch(e){}})();
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
