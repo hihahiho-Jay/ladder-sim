@@ -195,7 +195,7 @@
     <h2>정산</h2>
     <div class="row"><span class="k">월 납입 보험료</span><span class="v" id="s_prem">0원</span></div>
     <div class="row"><span class="k">총 납입 보험료 <small style="color:var(--sub);font-weight:600">(납입면제 반영 전)</small></span><span class="v" id="s_paidfull">0만원</span></div>
-    <div class="row" id="waiver_toggle" onclick="toggleWaiver()" style="cursor:pointer;user-select:none"><span class="k"><span id="waiver_caret">▶</span> 납입면제 금액 <small style="color:var(--sub);font-weight:600">(눌러서 상세 보기)</small></span><span class="v" id="s_waived" style="color:var(--gold)">0만원</span></div>
+    <div class="row" id="waiver_toggle" onclick="toggleWaiver()" style="cursor:pointer;user-select:none"><span class="k"><span id="waiver_caret">▶</span> 납입면제 금액 <small style="color:var(--sub);font-weight:600">(눌러서 보기)</small></span><span class="v" id="s_waived" style="color:var(--gold);display:none">0만원</span></div>
     <div id="waiver_wrap" style="display:none"><div id="s_waived_detail" class="waived-detail"></div></div>
     <div class="row"><span class="k">실제 납입 보험료 <small style="color:var(--sub);font-weight:600">(납입면제 반영 후)</small></span><span class="v" id="s_paid">0만원</span></div>
     <div class="row"><span class="k">총 지급액</span><span class="v" id="s_recv">0만원</span></div>
@@ -507,10 +507,11 @@ function toggleReal(){
   if(c) c.textContent = open ? '▶' : '▼';
 }
 function toggleWaiver(){
-  const w=document.getElementById('waiver_wrap'), c=document.getElementById('waiver_caret');
+  const w=document.getElementById('waiver_wrap'), c=document.getElementById('waiver_caret'), amt=document.getElementById('s_waived');
   if(!w) return;
   const open = w.style.display!=='none';
   w.style.display = open ? 'none' : '';
+  if(amt) amt.style.display = open ? 'none' : '';   // 금액도 펴야 나오게
   if(c) c.textContent = open ? '▶' : '▼';
 }
 function realRecvMan(r){
