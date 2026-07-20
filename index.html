@@ -607,11 +607,12 @@ function updatePremGraph(prem){
   after=Math.round(after);
   if(!(after<prem)){ card.style.display='none'; box.innerHTML=''; return; }
   card.style.display='';
-  // 막대 차트: 나이별 (막대는 최대 55%까지만 → 금액·주석이 화면 밖으로 안 나감)
-  let maxP=0; for(let a=entry;a<=death;a++)maxP=Math.max(maxP,premAt(a));
+  // 막대 차트: 가입 ~ 완납되는 해 +1 까지만 (사망 나이까지 완납줄 늘어지는 것 방지)
+  const lastAge=Math.min(death, payEnd);   // payEnd = 완납 다음 해(첫 0원 줄) = 완납+1
+  let maxP=0; for(let a=entry;a<=lastAge;a++)maxP=Math.max(maxP,premAt(a));
   if(maxP<=0){ box.innerHTML=''; return; }
   let html='', prev=null;
-  for(let a=entry;a<=death;a++){
+  for(let a=entry;a<=lastAge;a++){
     const p=premAt(a);
     const w=Math.max(0,(p/maxP)*55);
     let note='';
