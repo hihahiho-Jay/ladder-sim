@@ -117,12 +117,12 @@
   .waived-detail .wdnone{font-size:12.5px;color:var(--sub);padding:4px 0;line-height:1.4}
   .warn{font-size:12px;color:var(--sub);margin-top:15px;line-height:1.6}
   .redwarn{color:#d61f1f;font-weight:800;font-size:14px;text-align:center;line-height:1.65;padding:15px 16px;margin:2px 2px 4px;background:#fff2f2;border:1.5px solid #ffc9c9;border-radius:13px}
-  .pgrow{display:flex;align-items:center;gap:7px;height:17px;margin-bottom:2px}
-  .pgage{width:36px;font-size:11px;color:var(--sub);text-align:right;font-weight:700;flex:none}
-  .pgbarwrap{flex:1;display:flex;align-items:center;gap:6px;min-width:0}
-  .pgbar{height:12px;border-radius:0 3px 3px 0;background:linear-gradient(90deg,#8aa4ff,#5b7fff);transition:width .15s;flex:none}
-  .pgval{font-size:10.5px;color:var(--txt);font-weight:700;white-space:nowrap;flex:none}
-  .pgdrop{font-size:10.5px;color:var(--gold);font-weight:800;white-space:nowrap}
+  .pgrow{display:flex;align-items:center;height:17px;margin-bottom:2px}
+  .pgage{width:30px;font-size:11px;color:var(--sub);text-align:right;font-weight:700;flex:none;padding-right:8px;border-right:2px solid var(--line)}
+  .pgbarwrap{flex:1;display:flex;align-items:center;gap:6px;min-width:0;padding-left:8px;overflow:hidden}
+  .pgbar{height:12px;border-radius:0 3px 3px 0;background:linear-gradient(90deg,#8aa4ff,#5b7fff);transition:width .15s;flex:none;min-width:2px}
+  .pgval{font-size:10.5px;color:var(--txt);font-weight:700;white-space:nowrap;flex:none;overflow:hidden;text-overflow:ellipsis}
+  .pgdrop{font-size:10px;color:var(--gold);font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
   .pgdone{font-size:10.5px;color:#9aa3b5;font-weight:600}
   #real_wrap table{width:100%;border-collapse:collapse;margin-top:4px}
   #real_wrap th,#real_wrap td{border:1px solid var(--line);padding:9px 8px;font-size:14.5px}
@@ -218,8 +218,6 @@
 
   <div class="card" id="premafter_card" style="display:none">
     <h2>💸 나이별 내는 월 보험료 <small style="float:right;color:var(--sub);font-weight:600;font-size:13px">(등급 확정 시 면제로 감소)</small></h2>
-    <div class="row"><span class="k">면제 전 월 보험료</span><span class="v" id="s_premafter_before">0원</span></div>
-    <div class="row"><span class="k">면제 후 월 보험료 <small style="color:var(--sub);font-weight:600" id="s_premafter_when"></small></span><span class="v" id="s_premafter" style="color:var(--gold)">0원</span></div>
     <div id="premgraph" style="margin-top:12px"></div>
   </div>
 
@@ -602,22 +600,19 @@ function updatePremGraph(prem){
   after=Math.round(after);
   if(!(after<prem)){ card.style.display='none'; box.innerHTML=''; return; }
   card.style.display='';
-  document.getElementById('s_premafter_before').textContent=prem.toLocaleString()+'원';
-  document.getElementById('s_premafter').textContent=after.toLocaleString()+'원 ('+Math.round((1-after/prem)*100)+'% ↓)';
-  document.getElementById('s_premafter_when').textContent=minOnset!=null?('('+minOnset+'세 등급 확정 이후)'):'';
-  // 막대 차트: 나이별
+  // 막대 차트: 나이별 (막대는 최대 55%까지만 → 금액·주석이 화면 밖으로 안 나감)
   let maxP=0; for(let a=entry;a<=death;a++)maxP=Math.max(maxP,premAt(a));
   if(maxP<=0){ box.innerHTML=''; return; }
   let html='', prev=null;
   for(let a=entry;a<=death;a++){
     const p=premAt(a);
-    const w=Math.max(0,(p/maxP)*100);
+    const w=Math.max(0,(p/maxP)*55);
     let note='';
     if(prev!=null && p<prev){
       const now=[]; GRADES.forEach((g,i)=>{ if(!state.active[i])return; if(waiverOnset(i,_combo)===a)now.push(SHORT[i]); });
-      if(now.length) note='<span class="pgdrop">◀ '+a+'세 '+now.join('·')+' 면제</span>';
+      if(now.length) note='<span class="pgdrop">◀ '+a+' '+now.join('·')+' 면제</span>';
     }
-    html+='<div class="pgrow"><span class="pgage">'+a+'세</span><div class="pgbarwrap">'
+    html+='<div class="pgrow"><span class="pgage">'+a+'</span><div class="pgbarwrap">'
       +(p>0
         ? '<div class="pgbar" style="width:'+w+'%"></div><span class="pgval">'+p.toLocaleString()+'원</span>'
         : '<span class="pgdone">완납 (면제·만기)</span>')
