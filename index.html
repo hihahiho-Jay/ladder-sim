@@ -201,13 +201,19 @@
   <div class="card settle">
     <h2>정산</h2>
     <div class="row"><span class="k">월 납입 보험료</span><span class="v" id="s_prem">0원</span></div>
-    <div class="row" id="s_premafter_row" style="display:none"><span class="k">면제 후 월 보험료 <small style="color:var(--sub);font-weight:600">(등급 확정 이후)</small></span><span class="v" id="s_premafter" style="color:var(--gold)">0원</span></div>
     <div class="row"><span class="k">총 납입 보험료</span><span class="v" id="s_paidfull">0만원</span></div>
     <div class="row" id="waiver_toggle" onclick="toggleWaiver()" style="cursor:pointer;user-select:none"><span class="k"><span id="waiver_caret">▶</span> 납입면제 금액 <small style="color:var(--sub);font-weight:600">(눌러서 보기)</small></span><span class="v" id="s_waived" style="color:var(--gold);display:none">0만원</span></div>
     <div id="waiver_wrap" style="display:none"><div id="s_waived_detail" class="waived-detail"></div></div>
     <div class="row"><span class="k">실제 납입 보험료 <small style="color:var(--sub);font-weight:600">(납입면제 반영 후)</small></span><span class="v" id="s_paid">0만원</span></div>
     <div class="row"><span class="k">총 지급액</span><span class="v" id="s_recv">0만원</span></div>
     <div class="big"><div class="k">총 지급액 − 총 보험료</div><div class="v"><span id="s_profit">0</span><small>만원</small></div></div>
+  </div>
+
+  <div class="card" id="premafter_card" style="display:none">
+    <h2>💸 납입면제로 줄어드는 월 보험료</h2>
+    <div class="row"><span class="k">면제 전 월 보험료</span><span class="v" id="s_premafter_before">0원</span></div>
+    <div class="row"><span class="k">면제 후 월 보험료 <small style="color:var(--sub);font-weight:600" id="s_premafter_when"></small></span><span class="v" id="s_premafter" style="color:var(--gold)">0원</span></div>
+    <div class="big"><div class="k">매달 줄어드는 보험료</div><div class="v"><span id="s_premafter_save">0</span><small>원 ↓</small></div></div>
   </div>
 
   <div class="card">
@@ -494,24 +500,27 @@ function updateSettle(){
   const ratio=paidMan>0?(recvMan/paidMan):0;
   document.getElementById('premV').textContent=prem.toLocaleString();
   document.getElementById('s_prem').textContent=prem.toLocaleString()+'원';
-  // ── 면제 후 월 보험료 = 주계약 + 면제 안 되는(더 중증) 등급 특약. 납입기간 내 면제 발생 시에만 표시 ──
+  // ── 면제 후 월 보험료 카드 = 주계약 + 면제 안 되는(더 중증) 등급 특약. 납입기간 내 면제 발생 시에만 표시 ──
   (function(){
-    const row=document.getElementById('s_premafter_row'); if(!row) return;
+    const card=document.getElementById('premafter_card'); if(!card) return;
     const {main, grades}=premiumParts(); const _combo=isComboTab();
     const payEnd=state.age+payYears();
-    let after=main;
+    let after=main, minOnset=null;
     GRADES.forEach((g,i)=>{
       if(!state.active[i]) return;
       const on=waiverOnset(i,_combo);
       const waivedInPay = (on!=null && on<payEnd);   // 납입기간 안에 면제 시작해야 월납이 줄어듦
-      if(!waivedInPay) after+=grades[i];
+      if(waivedInPay){ if(minOnset==null||on<minOnset) minOnset=on; }
+      else after+=grades[i];
     });
     after=Math.round(after);
     if(after<prem){
-      row.style.display='';
-      document.getElementById('s_premafter').textContent=after.toLocaleString()+'원 '
-        +'('+Math.round((1-after/prem)*100)+'% ↓)';
-    } else { row.style.display='none'; }
+      card.style.display='';
+      document.getElementById('s_premafter_before').textContent=prem.toLocaleString()+'원';
+      document.getElementById('s_premafter').textContent=after.toLocaleString()+'원 ('+Math.round((1-after/prem)*100)+'% ↓)';
+      document.getElementById('s_premafter_when').textContent=minOnset!=null?('('+minOnset+'세 등급 확정 이후)'):'';
+      document.getElementById('s_premafter_save').textContent=(prem-after).toLocaleString();
+    } else { card.style.display='none'; }
   })();
   document.getElementById('s_paidfull').textContent=paidFullMan.toLocaleString()+'만원';
   document.getElementById('s_paid').textContent=paidMan.toLocaleString()+'만원';
