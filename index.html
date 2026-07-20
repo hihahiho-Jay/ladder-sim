@@ -217,8 +217,8 @@
   </div>
 
   <div class="card" id="premafter_card" style="display:none">
-    <h2>💸 나이별 내는 월 보험료 <small style="float:right;color:var(--sub);font-weight:600;font-size:13px">(등급 확정 시 면제로 감소)</small></h2>
-    <div id="premgraph" style="margin-top:12px"></div>
+    <h2 style="cursor:pointer;user-select:none" onclick="togglePremGraph()"><span id="premgraph_caret">▶</span> 💸 나이별 내는 월 보험료 <small style="float:right;color:var(--sub);font-weight:600;font-size:13px">(등급 확정 시 면제로 감소)</small></h2>
+    <div id="premgraph_wrap" style="display:none"><div id="premgraph" style="margin-top:12px"></div></div>
   </div>
 
   <div class="card">
@@ -534,6 +534,13 @@ function toggleWaiver(){
   if(amt) amt.style.display = open ? 'none' : '';   // 금액도 펴야 나오게
   if(c) c.textContent = open ? '▶' : '▼';
 }
+function togglePremGraph(){
+  const w=document.getElementById('premgraph_wrap'), c=document.getElementById('premgraph_caret');
+  if(!w) return;
+  const open = w.style.display!=='none';
+  w.style.display = open ? 'none' : '';
+  if(c) c.textContent = open ? '▶' : '▼';
+}
 function realRecvMan(r){
   // 미래 지급액(만원)을 (1+r)^(경과년수)로 할인 → 현재가치 합산
   return Math.round(ages().reduce((s,a)=>s + totalAt(a)*12 / Math.pow(1+r, Math.max(0,a-state.age)), 0));
@@ -610,7 +617,7 @@ function updatePremGraph(prem){
     let note='';
     if(prev!=null && p<prev){
       const now=[]; GRADES.forEach((g,i)=>{ if(!state.active[i])return; if(waiverOnset(i,_combo)===a)now.push(SHORT[i]); });
-      if(now.length) note='<span class="pgdrop">◀ '+a+' '+now.join('·')+' 면제</span>';
+      if(now.length) note='<span class="pgdrop">◀ '+now.join('·')+' 면제</span>';
     }
     html+='<div class="pgrow"><span class="pgage">'+a+'</span><div class="pgbarwrap">'
       +(p>0
