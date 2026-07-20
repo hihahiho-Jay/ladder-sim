@@ -589,23 +589,27 @@ function updateReal(){
 function updatePremGraph(prem){
   const card=document.getElementById('premafter_card'), box=document.getElementById('premgraph');
   if(!card||!box) return;
-  const {main, grades}=premiumParts(); const _combo=isComboTab();
+  const _combo=isComboTab();
+  // 콤보(오르락내리락) 모드는 comboPremiumParts, 일반 모드는 premiumParts
+  const {main, grades}= _combo ? comboPremiumParts() : premiumParts();
+  const isOn=i=> _combo ? (grades[i]>0) : state.active[i];   // 콤보=comboSeq 등급만
   const entry=state.age, death=state.endAge, payEnd=entry+payYears();
+  const premBefore=Math.round(main + GRADES.reduce((s,g,i)=>s+(isOn(i)?grades[i]:0),0));
   function premAt(a){
     if(a>=payEnd) return 0;                 // 완납 후 = 0
     let p=main;
-    GRADES.forEach((g,i)=>{ if(!state.active[i])return;
+    GRADES.forEach((g,i)=>{ if(!isOn(i))return;
       const on=waiverOnset(i,_combo);
       if(on==null || a<on) p+=grades[i];    // 면제 시작 나이 전까지만 납입
     });
     return Math.round(p);
   }
-  // 요약(면제 전/후) + 표시 여부
-  let after=main, minOnset=null;
-  GRADES.forEach((g,i)=>{ if(!state.active[i])return; const on=waiverOnset(i,_combo);
-    if(on!=null && on<payEnd){ if(minOnset==null||on<minOnset)minOnset=on; } else after+=grades[i]; });
+  // 표시 여부 (면제로 실제 감소가 있을 때만)
+  let after=main;
+  GRADES.forEach((g,i)=>{ if(!isOn(i))return; const on=waiverOnset(i,_combo);
+    if(!(on!=null && on<payEnd)) after+=grades[i]; });
   after=Math.round(after);
-  if(!(after<prem)){ card.style.display='none'; box.innerHTML=''; return; }
+  if(premBefore<=0 || !(after<premBefore)){ card.style.display='none'; box.innerHTML=''; return; }
   card.style.display='';
   // 막대 차트: 가입 ~ 완납되는 해 +1 까지만 (사망 나이까지 완납줄 늘어지는 것 방지)
   const lastAge=Math.min(death, payEnd);   // payEnd = 완납 다음 해(첫 0원 줄) = 완납+1
@@ -688,7 +692,7 @@ function comboPremium(){
   });
   return Math.round(sum);
 }
-function cbRange(){ return [state.age, state.endAge]; }
+function cbRange(){ return [Math.max(60, state.age), state.endAge]; }   // Y축 시작 60세 고정 (그 전엔 등급 판정 거의 없음)
 function cbAdd(g){
   if(comboSeq.length && comboSeq[comboSeq.length-1].g===g) return; // 같은 등급 연속 입력 불가 (5,4,5 OK / 5,5 X)
   const [lo,hi]=cbRange();
