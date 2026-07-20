@@ -194,6 +194,7 @@
   <div class="card settle">
     <h2>정산</h2>
     <div class="row"><span class="k">월 납입 보험료</span><span class="v" id="s_prem">0원</span></div>
+    <div class="row" id="s_premafter_row" style="display:none"><span class="k">면제 후 월 보험료 <small style="color:var(--sub);font-weight:600">(등급 확정 이후)</small></span><span class="v" id="s_premafter" style="color:var(--gold)">0원</span></div>
     <div class="row"><span class="k">총 납입 보험료</span><span class="v" id="s_paidfull">0만원</span></div>
     <div class="row" id="waiver_toggle" onclick="toggleWaiver()" style="cursor:pointer;user-select:none"><span class="k"><span id="waiver_caret">▶</span> 납입면제 금액 <small style="color:var(--sub);font-weight:600">(눌러서 보기)</small></span><span class="v" id="s_waived" style="color:var(--gold);display:none">0만원</span></div>
     <div id="waiver_wrap" style="display:none"><div id="s_waived_detail" class="waived-detail"></div></div>
@@ -486,6 +487,25 @@ function updateSettle(){
   const ratio=paidMan>0?(recvMan/paidMan):0;
   document.getElementById('premV').textContent=prem.toLocaleString();
   document.getElementById('s_prem').textContent=prem.toLocaleString()+'원';
+  // ── 면제 후 월 보험료 = 주계약 + 면제 안 되는(더 중증) 등급 특약. 납입기간 내 면제 발생 시에만 표시 ──
+  (function(){
+    const row=document.getElementById('s_premafter_row'); if(!row) return;
+    const {main, grades}=premiumParts(); const _combo=isComboTab();
+    const payEnd=state.age+payYears();
+    let after=main;
+    GRADES.forEach((g,i)=>{
+      if(!state.active[i]) return;
+      const on=waiverOnset(i,_combo);
+      const waivedInPay = (on!=null && on<payEnd);   // 납입기간 안에 면제 시작해야 월납이 줄어듦
+      if(!waivedInPay) after+=grades[i];
+    });
+    after=Math.round(after);
+    if(after<prem){
+      row.style.display='';
+      document.getElementById('s_premafter').textContent=after.toLocaleString()+'원 '
+        +'('+Math.round((1-after/prem)*100)+'% ↓)';
+    } else { row.style.display='none'; }
+  })();
   document.getElementById('s_paidfull').textContent=paidFullMan.toLocaleString()+'만원';
   document.getElementById('s_paid').textContent=paidMan.toLocaleString()+'만원';
   document.getElementById('s_waived').textContent=waivedMan>0?('-'+waivedMan.toLocaleString()+'만원'):'0만원';
