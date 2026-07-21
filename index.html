@@ -314,7 +314,7 @@ function waiverOnset(i,_combo){
   let earliest=null;
   for(let k=i;k<GRADES.length;k++){
     const o=_combo ? comboFirstOnset(k) : (state.active[k]?state.onset[k]:null);
-    if(o!=null && (earliest==null || o<earliest)) earliest=o;
+    if(o!=null && recognized(o) && (earliest==null || o<earliest)) earliest=o;   // 만기 후 발생은 면제도 무효
   }
   return earliest;
 }
@@ -351,8 +351,11 @@ function setGradeAmount(i, amt){
 }
 
 /* ===== 받는 돈 (가입+발생) ===== */
+// 등급 인정 만기 — 90세 만기면 90세 이전 발생만 인정, 종신이면 사망(끝)나이까지 인정. 지급은 무조건 종신.
+function recogAge(){ return state.maturity==='종신' ? state.endAge : 90; }
+function recognized(onset){ return onset!=null && onset<=recogAge(); }   // 만기 내 발생만 인정
 function durOf(i){ return DURATION[GRADES[i]]!==999 ? 10 : (state.endAge-state.onset[i]+1); }
-function alive(i,age){ return state.active[i] && state.onset[i]!=null && age>=state.onset[i] && age<state.onset[i]+durOf(i); }
+function alive(i,age){ return state.active[i] && recognized(state.onset[i]) && age>=state.onset[i] && age<state.onset[i]+durOf(i); }
 function monthlyOf(i,age){
   if(!alive(i,age))return 0;
   const base=state.amount[i]*0.10;
@@ -664,7 +667,7 @@ function isComboTab(){ const t=document.getElementById('tab-combo'); return !!t 
 function comboFirstOnset(g){ for(const c of comboSeq) if(c.g===g) return c.age; return null; }  // 등급별 최초 발생나이
 function comboMonthlyOfGrade(g,age){
   const onset=comboFirstOnset(g);
-  if(onset==null) return 0;                                            // 발생한 적 없음
+  if(onset==null || !recognized(onset)) return 0;                      // 발생 없음 or 만기 후 발생(인정 X)
   const dur=DURATION[GRADES[g]]!==999 ? 10 : (state.endAge-onset+1);   // 인지/5/4=10년, 1/2/3=종신
   if(age<onset || age>=onset+dur) return 0;                            // 최초 발생부터 기간 딱 1번 (재발해도 재지급 X)
   const base=state.amount[g]*0.10;
