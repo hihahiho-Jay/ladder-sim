@@ -593,9 +593,9 @@ function updatePremGraph(prem){
   const card=document.getElementById('premafter_card'), box=document.getElementById('premgraph');
   if(!card||!box) return;
   const _combo=isComboTab();
-  // 콤보(오르락내리락) 모드는 comboPremiumParts, 일반 모드는 premiumParts
-  const {main, grades}= _combo ? comboPremiumParts() : premiumParts();
-  const isOn=i=> _combo ? (grades[i]>0) : state.active[i];   // 콤보=comboSeq 등급만
+  // 내는 보험료 = 가입한 등급 전부(state.active). 콤보 모드도 동일 — 오르락내리락은 '면제 시점'만 바꿈(waiverOnset)
+  const {main, grades}=premiumParts();
+  const isOn=i=> state.active[i];
   const entry=state.age, death=state.endAge, payEnd=entry+payYears();
   const premBefore=Math.round(main + GRADES.reduce((s,g,i)=>s+(isOn(i)?grades[i]:0),0));
   function premAt(a){
