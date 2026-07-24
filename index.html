@@ -221,6 +221,21 @@
     <div id="premgraph_wrap" style="display:none"><div id="premgraph" style="margin-top:12px"></div></div>
   </div>
 
+  <div class="card" id="payterm_card" style="display:none">
+    <h2 style="cursor:pointer;user-select:none" onclick="togglePayterm()"><span id="payterm_caret">▶</span> ⏳ 20년 vs 30년 납입 비교 <small style="float:right;color:var(--sub);font-weight:600;font-size:13px">(할부처럼 나눠 내기)</small></h2>
+    <div id="payterm_wrap" style="display:none">
+      <table style="width:100%;border-collapse:collapse;margin-top:4px">
+        <thead><tr>
+          <th style="text-align:left;border:1px solid var(--line);padding:9px 8px;background:#f4f7fc;color:var(--sub)">납입</th>
+          <th style="text-align:right;border:1px solid var(--line);padding:9px 8px;background:#f4f7fc;color:var(--sub)">월 보험료</th>
+          <th style="text-align:right;border:1px solid var(--line);padding:9px 8px;background:#f4f7fc;color:var(--sub)">총 납입<small style="font-weight:600">(면제 반영)</small></th>
+        </tr></thead>
+        <tbody id="payterm_body"></tbody>
+      </table>
+      <div id="payterm_note" style="font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:10px"></div>
+    </div>
+  </div>
+
   <div class="card">
     <h2 style="cursor:pointer;user-select:none" onclick="toggleReal()"><span id="real_caret">▶</span> 💵 물가 반영 실질가치 <small style="float:right;color:var(--sub);font-weight:600;font-size:13px">(총 지급액을 현재 돈 가치로)</small></h2>
     <div id="real_wrap" style="display:none">
@@ -509,6 +524,7 @@ function updateSettle(){
   document.getElementById('premV').textContent=prem.toLocaleString();
   document.getElementById('s_prem').textContent=prem.toLocaleString()+'원';
   updatePremGraph(prem);
+  updatePayterm();
   document.getElementById('s_paidfull').textContent=paidFullMan.toLocaleString()+'만원';
   document.getElementById('s_paid').textContent=paidMan.toLocaleString()+'만원';
   document.getElementById('s_waived').textContent=waivedMan>0?('-'+waivedMan.toLocaleString()+'만원'):'0만원';
@@ -543,6 +559,54 @@ function togglePremGraph(){
   const open = w.style.display!=='none';
   w.style.display = open ? 'none' : '';
   if(c) c.textContent = open ? '▶' : '▼';
+}
+function togglePayterm(){
+  const w=document.getElementById('payterm_wrap'), c=document.getElementById('payterm_caret');
+  if(!w) return;
+  const open = w.style.display!=='none';
+  w.style.display = open ? 'none' : '';
+  if(c) c.textContent = open ? '▶' : '▼';
+}
+/* ===== 20 vs 30년 납입 비교 (현재 슬라이더 상태 그대로, 납기만 바꿔 계산) ===== */
+function paytermStats(ptStr){
+  // 지정 납기(pt)로 월납·총납입(면제 반영) 계산. 데이터 없으면 null.
+  const pt=resolvePayTerm(state.age,ptStr);
+  const data=PREM_FULL[`${state.plan}|${state.classic}|${state.gender}|${state.maturity}|${pt}`];
+  if(!data||!data['주계약']||!data['주계약'][String(state.age)]) return null;
+  const age=String(state.age);
+  const main=data['주계약'][age][1];
+  const g=[0,0,0,0,0,0];
+  GRADES.forEach((gg,i)=>{ if(!state.active[i])return;
+    const gs=gg.replace('등급',''); const tbl=data[`${state.sigang}|${gs}`]; const row=tbl&&tbl[age];
+    if(row){const[ent,prm]=row; g[i]=Math.round(prm*state.amount[i]/ent);} });
+  const py = pt==='종신' ? (state.endAge-state.age+1) : (+pt);
+  const payEnd=state.age+py;
+  const _combo=isComboTab();
+  let total=main*py*12;                          // 주계약 = 면제 제외, 전기간
+  GRADES.forEach((gg,i)=>{ if(!state.active[i])return;
+    const on=waiverOnset(i,_combo);
+    const paidYrs = (on!=null && recognized(on) && on<payEnd) ? Math.max(0,on-state.age) : py;
+    total += g[i]*paidYrs*12; });
+  return { pt:(pt==='종신'?'종신':py+'년'), monthly:Math.round(main+g.reduce((a,b)=>a+b,0)), total:Math.round(total) };
+}
+function updatePayterm(){
+  const card=document.getElementById('payterm_card'); if(!card) return;
+  const A=paytermStats('20'), B=paytermStats('30');
+  // 둘 다 있어야(현재 나이/만기에서 20·30 다 가능) 비교 의미. 다르면 숨김.
+  if(!A||!B||A.pt===B.pt){ card.style.display='none'; return; }
+  card.style.display='';
+  const fmt=w=> w>=10000 ? (Math.round(w/1000)/10)+'억원' : Math.round(w/10000).toLocaleString()+'만원';
+  const rows=[A,B].map(x=>'<tr>'
+    +'<td style="text-align:left;border:1px solid var(--line);padding:9px 8px"><b>'+x.pt+'</b></td>'
+    +'<td style="text-align:right;border:1px solid var(--line);padding:9px 8px"><b>'+x.monthly.toLocaleString()+'원</b></td>'
+    +'<td style="text-align:right;border:1px solid var(--line);padding:9px 8px">'+fmt(x.total)+'</td>'
+    +'</tr>').join('');
+  document.getElementById('payterm_body').innerHTML=rows;
+  const save=A.monthly-B.monthly, gap=B.total-A.total;
+  document.getElementById('payterm_note').innerHTML=
+    '💳 30년납은 <b style="color:var(--gold)">매달 '+save.toLocaleString()+'원 덜</b> 냅니다 (할부처럼 나눠 내기).'
+    +'<br>일찍 장기요양 등급을 받을수록 특약이 면제돼 총 납입 격차('+fmt(Math.abs(gap))+')가 줄어듭니다.'
+    +'<br><small>※ 주계약은 면제 대상이 아니라 총액은 30년납이 다소 큽니다 — 당장의 월 부담을 낮추는 선택.</small>';
 }
 function realRecvMan(r){
   // 미래 지급액(만원)을 (1+r)^(경과년수)로 할인 → 현재가치 합산
