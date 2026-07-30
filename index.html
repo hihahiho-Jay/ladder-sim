@@ -254,6 +254,19 @@
     </div>
   </div>
 
+  <div class="card">
+    <h2 style="cursor:pointer;user-select:none" onclick="toggleReinv()"><span id="reinv_caret">▶</span> 📈 받는 족족 재투자하면? <small style="float:right;color:var(--sub);font-weight:600;font-size:13px">(지급금을 굴려서 사망 나이까지)</small></h2>
+    <div id="reinv_wrap" style="display:none">
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button id="reinv_r3" onclick="setReinvRate(3)" style="flex:1;padding:9px;border-radius:10px;border:2px solid var(--line);background:transparent;color:var(--sub);font-weight:800;cursor:pointer">연 3%</button>
+        <button id="reinv_r4" onclick="setReinvRate(4)" style="flex:1;padding:9px;border-radius:10px;border:2px solid var(--line);background:transparent;color:var(--sub);font-weight:800;cursor:pointer">연 4%</button>
+        <button id="reinv_r5" onclick="setReinvRate(5)" style="flex:1;padding:9px;border-radius:10px;border:2px solid var(--line);background:transparent;color:var(--sub);font-weight:800;cursor:pointer">연 5%</button>
+      </div>
+      <div id="reinv_body"></div>
+      <div id="reinv_note" style="font-size:12px;color:var(--sub);line-height:1.7;margin-top:8px"></div>
+    </div>
+  </div>
+
   <div class="redwarn">⚠️ 교육·상담 참고용 자료일 뿐입니다!<br>월 납입 보험료, 총 납입 보험료, 납입면제 금액, 총 지급 금액 등은<br>표시된 것과 실제가 다를 수 있습니다!</div>
 
 <script src="sim_data.js?v=20260701"></script>
@@ -535,6 +548,7 @@ function updateSettle(){
   document.getElementById('s_recv').textContent=recvMan.toLocaleString()+'만원';
   document.getElementById('s_profit').textContent=profit.toLocaleString();
   updateReal();
+  updateReinvest();
 }
 
 /* ===== 물가 반영 실질가치 (미래 지급액을 현재가치로 할인) ===== */
@@ -650,6 +664,53 @@ function updateReal(){
     ROWS.map(row=>'※ <b>'+row.label+'</b> — '+row.note).join('<br>')
     +'<br>※ 실질 차액 = 실질 지급액 − 실질 보험료 (보험료도 물가로 할인)'
     +'<br>IMF : 한국물가 2028년 이후 <b>2.0%</b> 수렴 예상 (2025~2031 평균 2.1%)';
+}
+
+/* ===== 재투자 시뮬 — 지급금을 받는 즉시 r%로 굴려 사망 나이까지 (2026-07-30) ===== */
+let reinvRate=4;   // % (기본 4)
+const REINV_EX={
+  3:'정기예금 · 국고채 10년물 (원금보장급 안정)',
+  4:'우량 회사채(AA급) · 미국 국채 (안정)',
+  5:'회사채(A급) · 배당주+채권 혼합 (준안정)'
+};
+function toggleReinv(){
+  const w=document.getElementById('reinv_wrap'), c=document.getElementById('reinv_caret');
+  if(!w) return;
+  const open = w.style.display!=='none';
+  w.style.display = open ? 'none' : '';
+  if(c) c.textContent = open ? '▶' : '▼';
+}
+function setReinvRate(p){ reinvRate=p; updateReinvest(); }
+function updateReinvest(){
+  const body=document.getElementById('reinv_body'); if(!body) return;
+  const r=reinvRate/100, i=0.020;                    // 오늘가치 환산 = 한국은행 2.0% 기준
+  const D=state.endAge, yrs=Math.max(0, D-state.age);
+  // 명목 총지급 / 각 지급을 받은 해부터 사망 나이까지 복리 재투자한 평가액
+  const nom=Math.round(ages().reduce((s,a)=>s+totalAt(a)*12,0));
+  const fv =Math.round(ages().reduce((s,a)=>s+totalAt(a)*12*Math.pow(1+r,Math.max(0,D-a)),0));
+  const real0=realRecvMan(i);                        // 그냥 쓰면 오늘가치
+  const fvToday=Math.round(fv/Math.pow(1+i,yrs));    // 재투자 평가액의 오늘가치
+  const up = real0>0 ? Math.round((fvToday/real0-1)*100) : 0;
+  [3,4,5].forEach(p=>{ const b=document.getElementById('reinv_r'+p); if(!b)return;
+    b.style.borderColor=(p===reinvRate)?'var(--gold)':'var(--line)';
+    b.style.color=(p===reinvRate)?'var(--gold)':'var(--sub)'; });
+  body.innerHTML=
+    '<table><thead><tr>'
+    +'<th style="text-align:left">시나리오</th>'
+    +'<th style="width:118px;text-align:right">명목 금액</th>'
+    +'<th style="width:118px;text-align:right">오늘 돈 가치</th>'
+    +'</tr></thead><tbody>'
+    +'<tr><td style="text-align:left">그냥 받아서 쓰면</td>'
+    +'<td style="text-align:right">'+fmtEok(nom)+'</td>'
+    +'<td style="text-align:right">'+fmtEok(real0)+'</td></tr>'
+    +'<tr><td style="text-align:left"><b>받는 족족 연 '+reinvRate+'% 재투자</b></td>'
+    +'<td style="text-align:right"><b style="color:var(--gold)">'+fmtEok(fv)+'</b> <small>('+D+'세 시점)</small></td>'
+    +'<td style="text-align:right"><b style="color:var(--gold)">'+fmtEok(fvToday)+'</b> <small>(+'+up+'%)</small></td></tr>'
+    +'</tbody></table>';
+  document.getElementById('reinv_note').innerHTML=
+    '💡 지급금을 쓰지 않고 받는 즉시 연 <b>'+reinvRate+'%</b>로 굴려 <b>'+D+'세(사망 나이)</b>까지 둔 가정 — 나이·등급·사망 나이를 바꾸면 자동 반영'
+    +'<br>📎 연 '+reinvRate+'% 예시: <b>'+REINV_EX[reinvRate]+'</b>'
+    +'<br>※ 오늘 돈 가치 = 물가 2.0%(한국은행 목표) 할인 기준 · 수익률은 보장이 아닌 <b>가정치</b>';
 }
 
 /* ===== 나이별 내는 월 보험료 (가로 막대) — 등급 확정 나이마다 면제로 감소 ===== */
