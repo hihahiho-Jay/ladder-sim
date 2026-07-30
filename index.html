@@ -127,6 +127,9 @@
   #real_wrap table{width:100%;border-collapse:collapse;margin-top:4px}
   #real_wrap th,#real_wrap td{border:1px solid var(--line);padding:9px 8px;font-size:14.5px}
   #real_wrap th{background:#f4f7fc;color:var(--sub);font-weight:700}
+  #reinv_body table{width:100%;border-collapse:collapse;margin-top:4px}
+  #reinv_body th,#reinv_body td{border:1px solid var(--line);padding:9px 8px;font-size:14.5px}
+  #reinv_body th{background:#f4f7fc;color:var(--sub);font-weight:700}
 </style>
 </head>
 <body>
@@ -670,7 +673,7 @@ function updateReal(){
 let reinvRate=4;   // % (기본 4)
 const REINV_EX={
   3:'정기예금 · 국고채 10년물 (원금보장급 안정)',
-  4:'우량 회사채(AA급) · 미국 국채 (안정)',
+  4:'우량 회사채(AA급), 미국 국채',
   5:'회사채(A급) · 배당주+채권 혼합 (준안정)'
 };
 function toggleReinv(){
@@ -711,8 +714,8 @@ function updateReinvest(){
     +'<td style="text-align:right"><b style="color:var(--gold)">+'+up+'%</b></td></tr>'
     +'</tbody></table>';
   document.getElementById('reinv_note').innerHTML=
-    '※ 지급 즉시 연 '+reinvRate+'%로 '+D+'세까지 재투자 가정 · 오늘 가치 = 물가 2.0% 할인'
-    +'<br>📎 연 '+reinvRate+'% 예시: <b>'+REINV_EX[reinvRate]+'</b>';
+    '※ 지급금을 즉시 연 '+reinvRate+'%에 재투자시 (사망 나이 '+D+'세까지) · 오늘 돈 가치 = 물가 2.0% 할인'
+    +'<br>연 '+reinvRate+'% 상품 : <b>'+REINV_EX[reinvRate]+'</b>';
 }
 
 /* ===== 나이별 내는 월 보험료 (가로 막대) — 등급 확정 나이마다 면제로 감소 ===== */
