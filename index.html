@@ -230,7 +230,8 @@
       <table style="width:100%;border-collapse:collapse;margin-top:4px">
         <thead><tr>
           <th style="text-align:left;border:1px solid var(--line);padding:9px 8px;background:#f4f7fc;color:var(--sub)">납입</th>
-          <th style="text-align:right;border:1px solid var(--line);padding:9px 8px;background:#f4f7fc;color:var(--sub)">월 보험료</th>
+          <th style="text-align:right;border:1px solid var(--line);padding:9px 8px;background:#f4f7fc;color:var(--sub)">최초 월납</th>
+          <th style="text-align:right;border:1px solid var(--line);padding:9px 8px;background:#f4f7fc;color:var(--sub)">평균 월납<small style="font-weight:600">(면제 반영)</small></th>
           <th style="text-align:right;border:1px solid var(--line);padding:9px 8px;background:#f4f7fc;color:var(--sub)">총 납입<small style="font-weight:600">(면제 반영)</small></th>
         </tr></thead>
         <tbody id="payterm_body"></tbody>
@@ -604,7 +605,7 @@ function paytermStats(ptStr){
     const on=waiverOnset(i,_combo);
     const paidYrs = (on!=null && recognized(on) && on<payEnd) ? Math.max(0,on-state.age) : py;
     total += g[i]*paidYrs*12; });
-  return { pt:(pt==='종신'?'종신':py+'년'), monthly:Math.round(main+g.reduce((a,b)=>a+b,0)), total:Math.round(total) };
+  return { pt:(pt==='종신'?'종신':py+'년'), monthly:Math.round(main+g.reduce((a,b)=>a+b,0)), total:Math.round(total), months:py*12 };
 }
 function updatePayterm(){
   const card=document.getElementById('payterm_card'); if(!card) return;
@@ -612,18 +613,19 @@ function updatePayterm(){
   // 둘 다 있어야(현재 나이/만기에서 20·30 다 가능) 비교 의미. 다르면 숨김.
   if(!A||!B||A.pt===B.pt){ card.style.display='none'; return; }
   card.style.display='';
-  const fmt=w=> w>=10000 ? (Math.round(w/1000)/10)+'억원' : Math.round(w/10000).toLocaleString()+'만원';
+  const fmtWon=w=>{ const man=Math.round(w/10000); return Math.abs(man)>=10000 ? (Math.round(man/1000)/10)+'억원' : man.toLocaleString()+'만원'; };
+  const avg=x=>Math.round(x.total/x.months);
   const rows=[A,B].map(x=>'<tr>'
     +'<td style="text-align:left;border:1px solid var(--line);padding:9px 8px"><b>'+x.pt+'</b></td>'
-    +'<td style="text-align:right;border:1px solid var(--line);padding:9px 8px"><b>'+x.monthly.toLocaleString()+'원</b></td>'
-    +'<td style="text-align:right;border:1px solid var(--line);padding:9px 8px">'+fmt(x.total)+'</td>'
+    +'<td style="text-align:right;border:1px solid var(--line);padding:9px 8px">'+x.monthly.toLocaleString()+'원</td>'
+    +'<td style="text-align:right;border:1px solid var(--line);padding:9px 8px"><b style="color:var(--gold)">'+avg(x).toLocaleString()+'원</b></td>'
+    +'<td style="text-align:right;border:1px solid var(--line);padding:9px 8px">'+fmtWon(x.total)+'</td>'
     +'</tr>').join('');
   document.getElementById('payterm_body').innerHTML=rows;
-  const save=A.monthly-B.monthly, gap=B.total-A.total;
+  const saveAvg=avg(A)-avg(B), gap=B.total-A.total;
   document.getElementById('payterm_note').innerHTML=
-    '💳 30년납은 <b style="color:var(--gold)">매달 '+save.toLocaleString()+'원 덜</b> 냅니다 (할부처럼 나눠 내기).'
-    +'<br>일찍 장기요양 등급을 받을수록 특약이 면제돼 총 납입 격차('+fmt(Math.abs(gap))+')가 줄어듭니다.'
-    +'<br><small>※ 주계약은 면제 대상이 아니라 총액은 30년납이 다소 큽니다 — 당장의 월 부담을 낮추는 선택.</small>';
+    '💳 면제까지 감안한 평균으로는 30년납이 <b style="color:var(--gold)">매달 '+saveAvg.toLocaleString()+'원 덜</b> 냅니다 (할부처럼 나눠 내기).'
+    +'<br><small>※ 총 납입은 30년납이 '+fmtWon(Math.abs(gap))+' 큽니다 — 주계약은 면제 대상이 아니라서. 당장·평균 월 부담을 낮추는 선택.</small>';
 }
 function realRecvMan(r){
   // 미래 지급액(만원)을 (1+r)^(경과년수)로 할인 → 현재가치 합산
