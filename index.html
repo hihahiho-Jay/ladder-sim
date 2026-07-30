@@ -697,20 +697,22 @@ function updateReinvest(){
   body.innerHTML=
     '<table><thead><tr>'
     +'<th style="text-align:left">시나리오</th>'
-    +'<th style="width:118px;text-align:right">명목 금액</th>'
-    +'<th style="width:118px;text-align:right">오늘 돈 가치</th>'
+    +'<th style="width:110px;text-align:right">'+D+'세 시점</th>'
+    +'<th style="width:110px;text-align:right">오늘 돈 가치</th>'
     +'</tr></thead><tbody>'
-    +'<tr><td style="text-align:left">그냥 받아서 쓰면</td>'
-    +'<td style="text-align:right">'+fmtEok(nom)+'</td>'
-    +'<td style="text-align:right">'+fmtEok(real0)+'</td></tr>'
-    +'<tr><td style="text-align:left"><b>받는 족족 연 '+reinvRate+'% 재투자</b></td>'
-    +'<td style="text-align:right"><b style="color:var(--gold)">'+fmtEok(fv)+'</b> <small>('+D+'세 시점)</small></td>'
-    +'<td style="text-align:right"><b style="color:var(--gold)">'+fmtEok(fvToday)+'</b> <small>(+'+up+'%)</small></td></tr>'
+    +'<tr><td style="text-align:left"><b>그냥 쓰면</b></td>'
+    +'<td style="text-align:right"><b>'+fmtEok(nom)+'</b></td>'
+    +'<td style="text-align:right"><b>'+fmtEok(real0)+'</b></td></tr>'
+    +'<tr><td style="text-align:left"><b>연 '+reinvRate+'% 재투자</b></td>'
+    +'<td style="text-align:right"><b style="color:var(--gold)">'+fmtEok(fv)+'</b></td>'
+    +'<td style="text-align:right"><b style="color:var(--gold)">'+fmtEok(fvToday)+'</b></td></tr>'
+    +'<tr><td style="text-align:left">재투자 효과</td>'
+    +'<td style="text-align:right">—</td>'
+    +'<td style="text-align:right"><b style="color:var(--gold)">+'+up+'%</b></td></tr>'
     +'</tbody></table>';
   document.getElementById('reinv_note').innerHTML=
-    '💡 지급금을 쓰지 않고 받는 즉시 연 <b>'+reinvRate+'%</b>로 굴려 <b>'+D+'세(사망 나이)</b>까지 둔 가정 — 나이·등급·사망 나이를 바꾸면 자동 반영'
-    +'<br>📎 연 '+reinvRate+'% 예시: <b>'+REINV_EX[reinvRate]+'</b>'
-    +'<br>※ 오늘 돈 가치 = 물가 2.0%(한국은행 목표) 할인 기준 · 수익률은 보장이 아닌 <b>가정치</b>';
+    '※ 지급 즉시 연 '+reinvRate+'%로 '+D+'세까지 재투자 가정 · 오늘 가치 = 물가 2.0% 할인'
+    +'<br>📎 연 '+reinvRate+'% 예시: <b>'+REINV_EX[reinvRate]+'</b>';
 }
 
 /* ===== 나이별 내는 월 보험료 (가로 막대) — 등급 확정 나이마다 면제로 감소 ===== */
