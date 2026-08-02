@@ -281,10 +281,11 @@ const GRADES=['인지지원등급','5등급','4등급','3등급','2등급','1등
 const SHORT =['인지','5급','4급','3급','2급','1급'];
 const COLORS=['#a855f7','#3b82f6','#10b981','#eab308','#f97316','#ef4444'];   // 인지~1급 무지개 (마커 GCOL과 통일)
 const DURATION={'인지지원등급':10,'5등급':10,'4등급':10,'3등급':999,'2등급':999,'1등급':999};
-const DEFAULT_AMOUNTS=[50,100,150,250,500,500];
+const DEFAULT_AMOUNTS=[100,100,100,100,100,100];
 
-const state={age:64,gender:'남',sigang:'장기요양',plan:'뉴노멀I',classic:'일반',maturity:'90세',payTerm:20,endAge:90,
+const state={age:64,gender:'여',sigang:'장기요양',plan:'뉴노멀I',classic:'일반',maturity:'90세',payTerm:20,endAge:90,
   active:[true,true,true,true,true,true], amount:[...DEFAULT_AMOUNTS], onset:[65,null,70,null,75,null]};
+let comboSeq=[];   // 복합(오르락내리락) 발생 순서 [{g,age}] — 콤보가 디폴트 탭이라 초기 render 전에 선언 (TDZ 방지, 2026-08-02)
 
 /* ===== 보험료 (백업 로직 그대로 — 가입한 등급만 합산) ===== */
 function resolvePayTerm(age,pt){
@@ -795,7 +796,7 @@ document.querySelectorAll('.tabbtn').forEach(b=>{
 });
 
 /* ===== 복합(오르락내리락) 탭 — 세로축 마커 ===== */
-let comboSeq = [];   // 발생 순서 [{g:등급idx, age}]
+// comboSeq 선언은 상단(state 아래)으로 이동 — 초기 render TDZ 방지 (2026-08-02)
 // ── 복합 탭 계산 (시퀀스 기반 2배: 자기 발생 후 더 무거운 등급 나오면 2배) ──
 function isComboTab(){ const t=document.getElementById('tab-combo'); return !!t && t.style.display!=='none'; }
 function comboFirstOnset(g){ for(const c of comboSeq) if(c.g===g) return c.age; return null; }  // 등급별 최초 발생나이
