@@ -449,7 +449,8 @@ seg('gender','gender');seg('sigang','sigang');seg('plan','plan');seg('classic','
 
 function buildAmt(){
   const box=document.getElementById('amtbox'); box.innerHTML='';
-  GRADES.forEach((g,i)=>{
+  // 표시만 역순(1등급 위 → 인지 아래) — 등급 상향 설명용. 내부 인덱스는 그대로.
+  [...GRADES.keys()].reverse().forEach(i=>{ const g=GRADES[i];
     const row=document.createElement('div'); row.className='amtrow'+(state.active[i]?'':' off')+(i<=2?' g-ten':' g-life');
     const nm=document.createElement('div'); nm.className='nm'; nm.innerHTML=`<i style="background:${COLORS[i]}"></i>${SHORT[i]}`;
     const sel=document.createElement('select');
